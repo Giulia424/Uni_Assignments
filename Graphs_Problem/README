@@ -1,0 +1,17 @@
+    Pentru rezolvarea acestei teme, am folosit o structura asociata grafului in care am memorat
+numarul de noduri, de arce, de depozite, dar si matricea de adiacenta ulterior. In cadrul functiei
+main am initializat un sir c, in care sa citesc cerinta data de la tastatura, pe care a, trimis-o 
+ca parametru in functia citire.
+    In cadrul functiei citire, am initializat o serie de variabile pe care le-am utilizat pe parcurs 
+si am alocat memoria dinamica necesara . Mai intai am citit numarul de noduri si am creat matricea de 
+adiacenta(m-am asigurat sa o initializez cu 0 ). Apoi am citit numarul de muchii si numarul de depozite.
+Am citit numarul de cerinte si cerintele date. In cazul in care trebuia rezolvata prima cerinta, am citit 
+numarul de magazine ce trebuie sa fie aprovizionate si ID-ul depozitului din care se incarca marfa. Apoi am 
+apelat functia ex1 atat pentru drumul de la depozit la magazin, cat si pentru cel de intors, de la magazin 
+la depozit. In cadrul acestei functii am implementat algoritmul Dijkstra cu mici modificari. Am folosit doi 
+vectori ce sa imi retina nodurile vizitate, dar si predecesorii. Am folosit si o matrice de cost si un vector 
+pentru a retine distanta parcursa(costul drumului).M-am asigurat sa aloc memorie dinamica pentru toate acestea 
+si sa o eliberez in finalul functiei . 
+    In final, am apelat functia print1, care imi afiseaza Id-ul magazinul, drumul pana la acesta si drumul de 
+intors, iar apoi ID-urile nodurilor iın ordinea parcurgerii. Am folosit pointerul drum pentru a calcula drumul 
+total parcurs si l-am trimis prin parametru. In final am eliberat toata memoria dinamica alocata.  

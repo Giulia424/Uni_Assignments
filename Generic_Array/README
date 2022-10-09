@@ -1,0 +1,45 @@
+Pentru inceput am citit de cateva ori cerinta ca sa ma asigur ca am inteles-o inainte sa ma apuc de rezolvarea propriu-zisa.
+Prima functie de care m-am apucat a fost insert in care am creat structura si in care am distribuit datele cerute(bancnotele,
+ persoana care dedica si cea careia i se face dedicatia). Amales ca argument sirul citit de la tastatura 
+ (de ex:insert 1 Andrei 100 10 Andrei) si folosind strtokul l-am segmentat si am memorat in variabilele alese
+  (pers1,banc1, banc2,banc1_int8, etc.) ceea ce mi se cerea. Tipul de date a fost memorat in header(structura->header->type),
+   primul nume a fost memorat in sirul pers 1, respectiv al doilea nume in pers2. Iar pentru bancnote, am transformat din char
+    in int, luand in considerare si cazul in care valoarea unei bancnote este negativa, dupa ce am observat ca unul dintre teste presupune asta.
+Apoi am verificat tipul datelor si dupa ce am transformat valoarea bancnotelor corespunzator( in int8_t, int16_t si int32_t), 
+am alocat memoria necesara si am folosit functia memcpy pentru a copia in cadrul structurii ceea ce urma sa afisez si anume 
+pers1, banc1, banc2, pers2.
+
+Functia add_last primeste ca argumente vectorul generic arr, numarul de elemente din acesta si structura si adauga in cadrul 
+vectorului un nou element(o noua structura, deci headerul acesteia si datele). Mai intai am calculat numarul de octeti total
+ din vector. Apoi am verificat daca acesta este gol, caz in care am alocat memoria necesara sau, in caz contrar doar am 
+ realocat-o. Folosind numarul de octeti calculat anterior am copiat in cadrul vactorului exact ceea ce am mentionat mai 
+ devrme si in final am crescut numarul elementelor din vector(faptul ca am uitat asta s-a dovedit a fi o greseala foarte 
+ importanta ulterior, pe care mi-am pierdut prea mult timp ca sa fiu sincera).
+
+Urmatoarea functie este add_at care este relativ asemanatoare cu add_last.Aceasta primeste aceeasi parametrii, doar ca in
+ plus mai este si indexul la care trebuie sa adaugam elementul. De data asta am calculat mai intai numarul total de octeti
+  din cadrul vectorului, iar apoi numarul de octeti pana la indicele/indexul dat. Apoi am realocat memoria pentru vector. 
+  Am mutat de la indicicele cerut elementele aflate initial in vector,iar in locul acestora noul element.(In main am tratat
+   cazul in care vectorul era gol, caz in care am apelat functia add_last fara nicio problema)
+
+Functia delete_at se aseamana la randul ei cu add_at, astfel ca vectorul numara octetii pana la gasirea indicelui dat, dar
+ de data asta si numrul de octeti ai elementului care trebuie sters prin diferenta dintre numarul de octeti dupa parcurgerea 
+ tuturor elementelor inclusiv cel ce trebuie sters si numarul de octeti dupa parcurgerea elementelor pana la el. Apoi am scazut
+  numarul de elemente aflate in len.
+
+Urmatoarea functie este print ce primeste ca parametru vectorul generic arr si numarul de elemente din acesta. Si aici am ales
+ sa iau cateva variabile pentru a afisa sib forma ceruta(pers1, pers2,banc1_8,banc2_8 etc). Am luat un head in  care am copiat
+  headerele pentru fiecare element, folosind functia memcopy si numarul de octeti din arr, care creste odata cu fiecare afisare.
+  Am avut verificat tipul de date stocat in header->type.Pentru cele trei tipuri am afisat tipul, apoi am copiat in variabilele
+   corespunzatoare pentru banc1 si banc2 valorile cerute, si le-am afisat, odata cu valorile corespunzatoare pentru pers1 si pers2
+
+In functia find am calculat iar numarul de octeti din vectorul dat care de aceasta data a fost denumit data_block. (M-am gandit 
+sa fac o functie separata care sa faca asta, avand in vedere ca am tot folosit-o in alte functii dar ar fi trebuit sa il trimit
+ ca parametru in aceste functii, iar sintaxa cerintei nu permitea acest lucru)In orice caz, am copiat iatr intr-un head auxiliar 
+ headerele elementelor si am folosit trei if-uri ca sa vad tipul datelor. In cadrul fiecarui if am facut acelasi lucru ca la functia print.
+
+In main am alocat memoria dinamica pentru structura si pentru sirul pe care l-am creat. Apoi am citit primul rand de la
+ tastatura cu fgets si l-am adaugat in sirul meu, pe care apoi l-am analizat cu ajutorul strtok-ului pentru a vedea ce 
+ comanda este (print,insert add_at etc.). In fiecare caz in parte am apelat functia care trebuia si daca a fost cazul, 
+ am continuat sa folosesc strtok-ul pentru a afla indexul pe care l-am trimis ulterior ca parametru (asta a fost in cazul 
+ functiei add_at si delete_at). Am continuat sa citesc fiecare rand pana cand am citit exit.

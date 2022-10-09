@@ -1,0 +1,6 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/mnt/c/AC CTI/Cursuri/sem 2/sda/teme/tema3'
+make: Leaving directory '/mnt/c/AC CTI/Cursuri/sem 2/sda/teme/tema3'
+ 
+make: *** No targets specified and no makefile found.  Stop.
+

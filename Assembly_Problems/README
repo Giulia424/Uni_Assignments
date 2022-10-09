@@ -1,0 +1,36 @@
+Pentru taskul 1 am folosit doua registre in rezolavare: eax si ebx pe care le-am initializat
+cu 0 folosind xor-ul.Apoi am facut label-uri care m-au ajutat la parcurgerea sirului plain memorat
+in esi. Pentru asta am folosit resgistrul eax, pe care l-am incrementat  de fiecare data cand am trecut 
+la un nou caracter. Am folosit eax-ul si pentru copierea sirului criptat, adaugand noile valori la adresele 
+specifice.Pentru fiecare caracter in parte, l-am comparat cu litera Z, folosind codurile ASCII ale celor doua 
+litere. Am tratat si posibilitatea in care caracterul ales este mai mare ca Z,caz in care am substras 26 din codul ASCII al acestuia.
+
+Pentru taskul 2.1 am folosit registrele ecx si edx, pe care le-am initializat cu 0 din nou, cu xor.In registrul ecx am copiat valoarea y2
+(de la adresa ebx+4) pe care am comparat-o apoi cu valoarea y1 (de la adresa ebx). Cazul in care cele doua valori date pentru y nu sunt 
+egale(deci se afla pe o dreapta paralela cu ox), am dat jump la label-ul yegal. In acest caz, am comparat valorile pentru x (cea aflata la
+adresa ebx si cealalta aflata la ebx+4). In cazul in care x1 e mai mare decaqt x4, am sarit la label-ul x1maimare, unde am calculat distanta, 
+scazand din valoarea mai mare (deci din x1), valoarea mai mica (x2)si sarind la label-ul exit, unde am copiat in final in registrul dat eax 
+distanta calculata.Celalalt caz care a ramas de analizat este momentul in care cele doua valori pentru y sunt egale, deci daca punctele se
+afla pe o dreapta paralela cu oy. In acest caz, am comparat si de aceasta data celelalte doua valori date (x1 si x2), aflate la adresele ebx+2 si 
+ebx+6.In cazul in care x1 este mai mare decat x2, atunci am sarit la label-ul x1maimare unde am facut exact cum am mentionat anterior pentru y:am 
+scazut din valoarea mai mare,  cea mai mica si am memorat-o in registrul edx. Daca x2 este mai mare, am mutat mai intai in edx valoarea mai mare si
+ am sczaut valoarea mai mica.
+
+La taskul 2.2, pentru inceput m-am asigurat sa scad din registrul ecx 1, pentru loop-ul urmator care voiam sa aiba acelasi numar de pasi pe cate
+distante urmeaza sa le calculez la subpunctul urmator.De data asta am decis sa folosesc stiva.Am facut un label in cadrul careia am apelat functia
+de la tasul 2.1. Am folosit push pentru a memora pe stiva adresele de inceput ale registrelor eax si ebx. Am apelat functia, iar apoi in loc sa dau
+pop eax si ebx am preferat sa eliberez stiva, adaugand la registrul esp 8 octeti. In continuare am crescut adresele din cele doua registre cu cate 4 
+octeti, pentru a trece la urmatoarea pereche de puncte si am dat loop la label.
+
+La taskul 2.3 am folosit registrele edx, esi si edi.Am folosit edi si esi pentru a parcurge vectorul de distante astfel: in esi am retinut numarul 
+total de elemente, iar edi a devenit contorul pe care l-am initializat cu 0. Mai tarziu, in label-urile gasit si negasit, la final, am comparat valorile
+din registrele esi si edi, iar in cazul in care au ajuns sa fie egale, inseamna ca am parcurs tot vectorul si m-am oprit.In cadrul label-ului parcurgerevector 
+pe masura ce am ajuns la un nou element, l-am retinut in eax.In cadrul label-ului principal am folosit registrul edx pentru a calcula toate patratele perfecte 
+gasite pana am ajuns la elementul dat si retinut in eax. Apoi am comparat aceste patrate perfecte cu valoarea data, iar in cazul in care acestea erau egale,
+atunci am sarit la label-ul gasit.Aici am memorat 1 la adresa necesara pentru a nu suprascrie vectorul ecx (pe care l-am parcurs din 4 in 4 octeti). Asemanator,
+in cazul in care am gasit un patrat perfect mai mare decat elementul dat initial, am sarit la label-ul negasit in cadrul caruia, am memorat 0 in vectorul ecx.
+In final, in functia exit m-am asigurat sa elimin din stiva valoarea memorata initial in eax. 
+
+
+
+

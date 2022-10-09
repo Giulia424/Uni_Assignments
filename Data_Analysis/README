@@ -1,0 +1,22 @@
+		Pentru rezolvarea problemei am creat mai multe functii:am inceput cu cele de baza(adaugare nod,eliminare nod, eliberare lista,citirea 
+	listei, afisarea ei)si apoi am facut functiile corespuzatoare subpunctelor(e1,e2,e3,u).In main doar am declarat si initializat ce aveam
+	nevoie, am apelat functiile si m-am ocupat de argumentele din linia de comanda.
+		Prima functie din fisier este una de tip void, si anume adaugare.Aici am alocat dinamic memoria necesara fiecarui nod si i-am dat valoare
+	si timestamp. Am verificat daca lista este goala si in cazul in care era adevarat, celula adaugata devenea primul nod al listei.
+		Functia eliminare sterge din lista data cate un nod: verifica daca acesta este primul nod, ultimul sau unicul nod din lista(caz in care 
+	nu poate fi eliminat).In toate aceste cazuri, eliminarea se realizeaza prin schimbarea nodului anterior si a celui urmator la care pointeaza.
+		In urmatoarea functie, citesc numarul de noduri si apoi timestampul, respectic valoarea pentru toate nodurile. In cadrul functiei afisare
+	am folosit un for ce parcurge lista de la primul element pana cand ajunge la NULL si apoi afiseaza timestampul si valoarea pentru fiecare.
+	M-am asigurat apoi ca am creat si o functie care sa imi elibereze memoria alocata. Am preferat sa parcurg lista in mod recursiv, si sa 
+	eliberez toate nodurile, incepand de la primul, pe care il trimit ca parametru din main.
+		Pentru subpunctul intai, am creat o alta functie recursiva in cadrul careia am introdus cateva variabile double pentru calculul mediei 
+	deviatiei. Am ales ca pentru fiecare nod sa aleg cate doua noduri alterioare si doua ulterioare pentru calculul sumei si a mediei 
+	aritmetice.In cazul in care valorile calculate pentru deviatie nu se incadreaza in intervalul cerut, atunci am eliminat nodul.
+	In functia e2 am creat o lista auxiliara in care am decis sa stochez din valorile mediane calculate pentru fievcare interval. 
+	Pentru fiecare nod am ales la fel ca la subpunctul anterior, doua noduri anterioare si doua ulterioare pentru acest calcul.
+	Am luat un contor c care sa numere de fiecare data cand gasesc o valoare mai mica decat cea a nodului ales initial.
+	La final am eliberat lista si am mutat apoi in lista initiala nodurile initial, final si numarul de noduri obtinut anterior 
+	in lista auxiliara.
+ 		In functia u am parcurs lista de la al doilea nod, pana la final si am creat o variabila double dif care sa retina diferenta de
+	timestamp intre nodul ales si cel anterior. Daca diferenta obtinuta era mai mica sau egala cu 0.1 si mai mare sau egala cu 1, 
+	atunci am inlocuit valoarea nodului curent cu valoare medie dintre nodul anterior si nodul curent.
