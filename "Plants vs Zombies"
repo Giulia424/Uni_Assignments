@@ -38,19 +38,49 @@ void Tema1::Init()
     camera->Update();
     GetCameraInput()->SetActive(false);
 
-    squareSide = 150;
+    squareSide = 100;
+    outlineLength = 120;
+    height_r = 320;
+    width_r = 40;
+    width_d = 30;
+    height_d = 50;
 
         glm::vec3 corner1 = glm::vec3(0, 0, 0);
-        Mesh* dsquare = object2D::CreateSquare("dark_square", corner1, squareSide, glm::vec3(0.1, 0, 0.5), true);
+        Mesh* dsquare = object2D::CreateSquare("dark_square", corner1, squareSide, glm::vec3(0.1, 0, 0.4), true);
         AddMeshToList(dsquare);
 
         glm::vec3 corner2 = glm::vec3(0, 0, 0);
-        Mesh* lsquare = object2D::CreateSquare("light_square", corner2, squareSide, glm::vec3(0.2, 0, 0.6), true);
+        Mesh* lsquare = object2D::CreateSquare("light_square", corner2, squareSide, glm::vec3(0.2, 0, 0.5), true);
         AddMeshToList(lsquare);
     
+        glm::vec3 corner3 = glm::vec3(0, 0, 0);
+        Mesh* rectangular = object2D::CreateRectangular("rectangular", corner3, width_r, height_r, glm::vec3(0.2, 0, 0.6), true);
+        AddMeshToList(rectangular);
 
+  
+        glm::vec3 corner4 = glm::vec3(0, 0, 0);
+        Mesh* squareoutline= object2D::CreateSquareOutline("squareoutline", corner4, outlineLength, glm::vec3(0.2, 0, 0.6), true);
+        AddMeshToList(squareoutline);
 
+        glm::vec3 corner5 = glm::vec3(0, 0, 0);
+        Mesh* life = object2D::CreateLife("life", corner5, outlineLength, glm::vec3(0.2, 0, 0.6), true);
+        AddMeshToList(life);
 
+        glm::vec3 center1 = glm::vec3(0, 0, 0);
+        Mesh* diamond1 = object2D::CreateDiamond("diamond1", center1, height_d, width_d, glm::vec3(0.4, 0, 0), true);
+        AddMeshToList(diamond1);
+
+        glm::vec3 center2 = glm::vec3(0, 0, 0);
+        Mesh* diamond2 = object2D::CreateDiamond("diamond2", center2, height_d, width_d, glm::vec3(0, 0, 1), true);
+        AddMeshToList(diamond2);
+
+        glm::vec3 center3 = glm::vec3(0, 0, 0);
+        Mesh* diamond3 = object2D::CreateDiamond("diamond3", center3, height_d, width_d, glm::vec3(0.5, 0.5, 0), true);
+        AddMeshToList(diamond3);
+
+        glm::vec3 center4 = glm::vec3(0, 0, 0);
+        Mesh* diamond4 = object2D::CreateDiamond("diamond4", center4, height_d, width_d, glm::vec3(0, 0.6, 0.2), true);
+        AddMeshToList(diamond4);
 
 
 
@@ -74,51 +104,80 @@ void Tema1::Update(float deltaTimeSeconds)
     
     modelMatrix = glm::mat3(1);
 
-   for (int i = 1; i < 6; i+=2) { // creez tabla, alternand culoriile patratelor
-
-
-        modelMatrix *= transform2D::Translate(resolution.x - i * squareSide, 0);
+   for (int i = 1; i < 8; i+=2) { // creez tabla, alternand culoriile patratelor
+        modelMatrix *= transform2D::Translate(resolution.x - i * squareSide-10, 10);
         RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
-
-        modelMatrix *= transform2D::Translate(0, squareSide);
+        modelMatrix *= transform2D::Translate(0, squareSide+10);
         RenderMesh2D(meshes["light_square"], shaders["VertexColor"], modelMatrix);
-
-        modelMatrix *= transform2D::Translate(0, squareSide);
+        modelMatrix *= transform2D::Translate(0, squareSide+10);
         RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
-
         modelMatrix = glm::mat3(1); // Resetam matricea model 
 
-
-        modelMatrix *= transform2D::Translate(resolution.x - (i+1) * squareSide, 0);
+        modelMatrix *= transform2D::Translate(resolution.x - (i+1) * squareSide-10, 10);
         RenderMesh2D(meshes["light_square"], shaders["VertexColor"], modelMatrix);
-
-        modelMatrix *= transform2D::Translate(0, squareSide);
+        modelMatrix *= transform2D::Translate(0, squareSide+10);
         RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
-
-        modelMatrix *= transform2D::Translate(0, squareSide);
+        modelMatrix *= transform2D::Translate(0, squareSide+10);
         RenderMesh2D(meshes["light_square"], shaders["VertexColor"], modelMatrix);
-
         modelMatrix = glm::mat3(1); // Resetam matricea model 
 
         
          }
 
+      for (int i = 7; i < 10; i ++) {
+          modelMatrix *= transform2D::Translate(resolution.x - i *squareSide - 35*i, 10);
+          RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
+          modelMatrix *= transform2D::Translate(0, squareSide + 10);
+          RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
+          modelMatrix *= transform2D::Translate(0, squareSide + 10);
+          RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
+          modelMatrix = glm::mat3(1); // Resetam matricea model 
 
-   /*glm::vec3 color(0, 0, 0.5f);
-   vector<VertexFormat> ver = { {{0,0,0},color}, {{1,1,1},color} };
-   vector<unsigned int> indx = { 0,1 };
+      }
+    
+       modelMatrix *= transform2D::Translate(10,  10);
+       RenderMesh2D(meshes["rectangular"], shaders["VertexColor"], modelMatrix);
+       modelMatrix = glm::mat3(1); // Resetam matricea model 
+       modelMatrix *= transform2D::Translate(outlineLength, resolution.y - outlineLength - 30);
+       RenderMesh2D(meshes["squareoutline"], shaders["VertexColor"], modelMatrix);
 
-   Mesh* line = new Mesh("generatedLine");
-   line->SetDrawMode(GL_LINES);
-   line->InitFromData(ver, indx);
-   meshes["generatedLine"] = line;
 
-   glm::mat3 m(1);
+       for (int i = 2; i < 5; i++) { // crearea contururilor pentru romburi
+            modelMatrix *= transform2D::Translate(outlineLength *1.5, 0);
+            RenderMesh2D(meshes["squareoutline"], shaders["VertexColor"], modelMatrix);
+            
 
-   m *= transform2D::Translate(50, 50);
+       }
+       modelMatrix *= transform2D::Translate(outlineLength /2, outlineLength /2);
+       RenderMesh2D(meshes["diamond1"], shaders["VertexColor"], modelMatrix);
 
-   RenderMesh(line, shaders["VertexColor"],m);
-   */
+
+       modelMatrix *= transform2D::Translate(-1.5 * outlineLength,0);
+       RenderMesh2D(meshes["diamond2"], shaders["VertexColor"], modelMatrix);
+
+       modelMatrix *= transform2D::Translate(-1.5 * outlineLength, 0);
+       RenderMesh2D(meshes["diamond3"], shaders["VertexColor"], modelMatrix);
+
+
+       modelMatrix *= transform2D::Translate(-1.5 * outlineLength, 0);
+       RenderMesh2D(meshes["diamond4"], shaders["VertexColor"], modelMatrix);
+
+       
+
+       modelMatrix = glm::mat3(1); // Resetam matricea model 
+       modelMatrix *= transform2D::Translate(resolution.x - 1.5 * outlineLength, resolution.y - outlineLength - 30);
+       RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
+       modelMatrix = glm::mat3(1); // Resetam matricea model 
+       modelMatrix *= transform2D::Translate(resolution.x - 2.5 * outlineLength, resolution.y - outlineLength - 30);
+       RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
+       modelMatrix = glm::mat3(1); // Resetam matricea model 
+       modelMatrix *= transform2D::Translate(resolution.x - 3.5 * outlineLength, resolution.y - outlineLength - 30);
+       RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
+
+
+
+
+  
 }
 
 
