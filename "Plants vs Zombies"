@@ -134,9 +134,13 @@ void Tema1::Update(float deltaTimeSeconds)
 
 
     }
+        modelMatrix = glm::mat3(1); // Resetam matricea model 
+        modelMatrix *= transform2D::Translate(10, 10);
+        RenderMesh2D(meshes["rectangular"], shaders["VertexColor"], modelMatrix);
+        modelMatrix = glm::mat3(1); // Resetam matricea model 
 
-    for (int i = 7; i < 10; i++) {
-        modelMatrix *= transform2D::Translate(resolution.x - i * squareSide - 35 * i, 10);
+    for (int i = 0; i < 3; i++) {
+        modelMatrix *= transform2D::Translate(width_r +20 + 20 * i+ squareSide * i, 10);
         RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
         modelMatrix *= transform2D::Translate(0, squareSide + 10);
         RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
@@ -146,18 +150,12 @@ void Tema1::Update(float deltaTimeSeconds)
 
     }
 
-    modelMatrix *= transform2D::Translate(10, 10);
-    RenderMesh2D(meshes["rectangular"], shaders["VertexColor"], modelMatrix);
     modelMatrix = glm::mat3(1); // Resetam matricea model 
     modelMatrix *= transform2D::Translate(outlineLength, resolution.y - outlineLength - 30);
     RenderMesh2D(meshes["squareoutline"], shaders["VertexColor"], modelMatrix);
-
-
     for (int i = 2; i < 5; i++) { // crearea contururilor pentru romburi
         modelMatrix *= transform2D::Translate(outlineLength * 1.5, 0);
         RenderMesh2D(meshes["squareoutline"], shaders["VertexColor"], modelMatrix);
-
-
     }
     
     modelMatrix *= transform2D::Translate(outlineLength / 2, outlineLength / 2);
@@ -258,28 +256,54 @@ void Tema1::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 
 
 void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
-{   
+{
     sceneY = 720 - mouseY;
-    if (button == 1)
+    /*if (button == 1) {
         if (mouseX > outlineLength && mouseX < 2 * outlineLength) // ne aflam in casuta primului romb
-           if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y -30)
-        {
-               d = new Diam(4, true,{mouseX,sceneY});
-               Diamonds.push_back(d);
-        }
+            if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
+            {
+                d = new Diam(1, true, { mouseX,sceneY });
+                Diamonds.push_back(d);
+            }
 
-   if (mouseX >  outlineLength * 2.5 && mouseX < outlineLength * 3.5) // ne aflam in casuta celui de-al doilea romb
-        if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
-        {
-            d = new Diam(3,true, { mouseX,sceneY });
-            Diamonds.push_back(d);
+        for (int i = 2; i < 5; i++) {
+            if (mouseX > outlineLength/2 + outlineLength *i && mouseX < outlineLength/2 + outlineLength * (i+2))
+            {
+                d = new Diam(i, true, { mouseX,sceneY });
+                Diamonds.push_back(d);
+            }
         }
-   if (mouseX > outlineLength * 3.5 && mouseX < outlineLength * 5.5)
-       if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
-               cout << "a";
+    }
+    */
+    if (button == 1) {
+        if (mouseX > outlineLength && mouseX < 2 * outlineLength) // ne aflam in casuta primului romb
+            if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
+            {
+                d = new Diam(4, true, { mouseX,sceneY });
+                Diamonds.push_back(d);
+            }
 
-    // Add mouse button press event
+        if (mouseX > outlineLength * 2 + outlineLength / 2 && mouseX < outlineLength * 3 + outlineLength / 2) // ne aflam in casuta celui de-al doilea romb
+            if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
+            {
+                d = new Diam(3, true, { mouseX,sceneY });
+                Diamonds.push_back(d);
+            }
+        if (mouseX > outlineLength * 4 && mouseX < outlineLength * 5)
+            if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
+            {
+                d = new Diam(2, true, { mouseX,sceneY });
+                Diamonds.push_back(d);
+            }
+        if (mouseX > outlineLength * 5 + outlineLength / 2 && mouseX < outlineLength * 6 + outlineLength / 2)
+            if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
+            {
+                d = new Diam(1, true, { mouseX,sceneY });
+                Diamonds.push_back(d);
+            }
+    }
 }
+
 
 
 void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
@@ -288,79 +312,27 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 
     if (!Diamonds.empty())
         for (int i = 0; i < Diamonds.size(); i++) {       
-            if (mouseX > resolution.x - 9 * squareSide - 35 * 9 && mouseX < resolution.x - 8 * squareSide - 35 * 9) {
-
-                if (sceneY < squareSide + 10 && sceneY > 10)
-                    if (Diamonds[i]->render) {
-                        Diamonds[i]->coord.first = squareSide * 0.5 + width_r + 15;
-                        Diamonds[i]->coord.second = 10 + squareSide / 2;
-                        Diamonds[i]->render = false;
-
-                    }
-                if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20)
-                    if (Diamonds[i]->render) {
-                        Diamonds[i]->coord.first = squareSide * 0.5 + width_r + 15;
-                        Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
-                        Diamonds[i]->render = false;
-
-                    }
-                if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30)
-                    if (Diamonds[i]->render) {
-                        Diamonds[i]->coord.first = squareSide * 0.5 + width_r + 15;
-                        Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
-                        Diamonds[i]->render = false;
-
-                    }
-            }
-
-            if (mouseX > resolution.x - 8 * squareSide - 35 * 8 && mouseX < resolution.x - 7 * squareSide - 35 * 8) {
-                if (sceneY < squareSide + 10 && sceneY > 10)
-                    if (Diamonds[i]->render) {
-                        Diamonds[i]->coord.first = squareSide * 1.5 + width_r + 50;
-                        Diamonds[i]->coord.second = 10 + squareSide / 2;
-                        Diamonds[i]->render = false;
-
-                    }
-                if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20)
-                    if (Diamonds[i]->render) {
-                        Diamonds[i]->coord.first = squareSide * 1.5 + width_r + 50;
-                        Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
-                        Diamonds[i]->render = false;
-
-                    }
-                if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30)
-                    if (Diamonds[i]->render) {
-                        Diamonds[i]->coord.first = squareSide * 1.5 + width_r + 50;
-                        Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
-                        Diamonds[i]->render = false;
-
-                    }
-
-
-            }
-
-            if (mouseX > resolution.x - 7 * squareSide - 35 * 7 && mouseX < resolution.x - 6 * squareSide - 35 * 7) {
-                if (sceneY < squareSide + 10 && sceneY > 10)
-                    if (Diamonds[i]->render) {
-                        Diamonds[i]->coord.first = squareSide * 2.5 + width_r + 80;
-                        Diamonds[i]->coord.second = 10 + squareSide / 2;
-                        Diamonds[i]->render = false;
-                    }
-                if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20)
-                    if (Diamonds[i]->render) {
-                        Diamonds[i]->coord.first = squareSide * 2.5 + width_r + 80;
-                        Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
-                        Diamonds[i]->render = false;
-                    }
-                if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30)
-                    if (Diamonds[i]->render) {
-                        Diamonds[i]->coord.first = squareSide * 2.5 + width_r + 80;
-                        Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
-                        Diamonds[i]->render = false;
-                    }
-
-            }
-
+            for(int j = 0; j<3; j++)
+                if (mouseX > width_r + (j+1) * 20 + squareSide * j && mouseX < (j + 1) * squareSide + width_r + (j + 1) * 20) {
+                    if (sceneY < squareSide + 10 && sceneY > 10)
+                        if (Diamonds[i]->render) {
+                            Diamonds[i]->coord.first = squareSide /2 + squareSide * j + width_r + 15 * (j+1);
+                            Diamonds[i]->coord.second = 10 + squareSide / 2;
+                            Diamonds[i]->render = false;
+                        }
+                    if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20)
+                        if (Diamonds[i]->render) {
+                            Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
+                            Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
+                            Diamonds[i]->render = false;
+                        }
+                    if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30)
+                        if (Diamonds[i]->render) {
+                            Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
+                            Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
+                            Diamonds[i]->render = false;
+                        }
+                }
                 
         }
 
