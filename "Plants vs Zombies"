@@ -46,7 +46,7 @@ void Tema1::Init()
     width_r = 40;
     width_d = 30;
     height_d = 50;
-    r = 20;
+    r = 40;
     
 
   
@@ -73,7 +73,7 @@ void Tema1::Init()
     AddMeshToList(life);
 
     glm::vec3 center1 = glm::vec3(0, 0, 1);
-    Mesh* diamond1 = object2D::CreateDiamond("diamond1", center1, height_d, width_d, glm::vec3(0.4, 0, 0), true);
+    Mesh* diamond1 = object2D::CreateDiamond("diamond1", center1, height_d, width_d, glm::vec3(0.69f, 0.078f, 0.137f), true);
     AddMeshToList(diamond1);
 
     glm::vec3 center2 = glm::vec3(0, 0, 1);
@@ -81,16 +81,28 @@ void Tema1::Init()
     AddMeshToList(diamond2);
 
     glm::vec3 center3 = glm::vec3(0, 0, 1);
-    Mesh* diamond3 = object2D::CreateDiamond("diamond3", center3, height_d, width_d, glm::vec3(0.5, 0.5, 0), true);
+    Mesh* diamond3 = object2D::CreateDiamond("diamond3", center3, height_d, width_d, glm::vec3(0.778f, 0.735f, 0.157f), true);
     AddMeshToList(diamond3);
 
     glm::vec3 center4 = glm::vec3(0, 0, 1);
     Mesh* diamond4 = object2D::CreateDiamond("diamond4", center4, height_d, width_d, glm::vec3(0, 0.6, 0.2), true);
     AddMeshToList(diamond4);
 
-    glm::vec3 center5 = glm::vec3(0, 0, 0);
-    Mesh* hexagon1 = object2D::CreateHexagon("hexagon1",center5,r, glm::vec3(0, 0.6, 0.2), true);
+    glm::vec3 center5 = glm::vec3(0, 0, 1);
+    Mesh* hexagon1 = object2D::CreateHexagon("hexagon1",center5, r , glm::vec3(0.51f, 0.051f, 0.075f), glm::vec3(0.69f, 0.078f, 0.137f), true);
     AddMeshToList(hexagon1);
+
+    glm::vec3 center6 = glm::vec3(0, 0, 1);
+    Mesh* hexagon2 = object2D::CreateHexagon("hexagon2", center6, r, glm::vec3(0, 0, 0.5), glm::vec3(0, 0, 1), true);
+    AddMeshToList(hexagon2);
+
+    glm::vec3 center7 = glm::vec3(0, 0, 1);
+    Mesh* hexagon3 = object2D::CreateHexagon("hexagon3", center7, r, glm::vec3(1, 0.986f, 0), glm::vec3(0.778f, 0.735f, 0.157f), true);
+    AddMeshToList(hexagon3);
+
+    glm::vec3 center8 = glm::vec3(0, 0, 1);
+    Mesh* hexagon4 = object2D::CreateHexagon("hexagon4", center8, r, glm::vec3(0, 0.4, 0.1), glm::vec3(0, 0.6, 0.2), true);
+    AddMeshToList(hexagon4);
 
 }
 
@@ -200,8 +212,18 @@ void Tema1::Update(float deltaTimeSeconds)
             else if (Diamonds[i]->id == 1)
                RenderMesh2D(meshes["diamond1"], shaders["VertexColor"], modelMatrix);
         }
+   
 
-
+    random = rand() % 100;
+    if (random == 30)
+        for (int i = 0; i < 3; i++) 
+            {
+                modelMatrix = glm::mat3(1); // Resetam matricea model 
+                modelMatrix *= transform2D::Translate(resolution.x - 10, 10 + 10 * i + squareSide/2 + squareSide *i);
+                hex = "hexagon" + std::to_string((rand() % 4) + 1);
+                RenderMesh2D(meshes[hex], shaders["VertexColor"], modelMatrix);
+            }
+       
 }
 
 
@@ -259,16 +281,25 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
     sceneY = 720 - mouseY;
     if (button == 1) {
-    
-        for (float i = 1, j = 4; i < 6 && j > 0; i += 1.5, j--) {
-            if (mouseX > outlineLength * i && mouseX <  outlineLength * (i+1))
+
+        for (float i = 1, j = 4; i < 6 && j > 0; i += 1.5, j--) { // anytime i drag a new diamond
+            if (mouseX > outlineLength * i && mouseX < outlineLength * (i + 1))
                 if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
-                    {
-                        d = new Diam(j, true, { mouseX,sceneY });
-                        Diamonds.push_back(d);
-                    }
+                {
+                    d = new Diam(j, true, { mouseX,sceneY });
+                    Diamonds.push_back(d);
+                }
         }
     }
+    if (button == 2) {
+        if (!Diamonds.empty()) // if i press an already dropped diamond
+            for (int i = 0; i < Diamonds.size(); i++)
+                if (!Diamonds[i]->render)  // initially render is true, and when the object is dropped correctly it becomes false
+                    if (mouseX > Diamonds[i]->coord.first - squareSide / 2 && mouseX < Diamonds[i]->coord.first + squareSide / 2)
+                        if (sceneY > Diamonds[i]->coord.second - squareSide / 2 && sceneY < Diamonds[i]->coord.second + squareSide / 2)
+                            Diamonds[i]->id = -1; // i make sure it is not rendered in the update function
+    }
+
 }
 
 
@@ -279,29 +310,32 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 
     if (!Diamonds.empty())
         for (int i = 0; i < Diamonds.size(); i++) {       
-            for(int j = 0; j<3; j++)
-                if (mouseX > width_r + (j+1) * 20 + squareSide * j && mouseX < (j + 1) * squareSide + width_r + (j + 1) * 20) {
-                    if (sceneY < squareSide + 10 && sceneY > 10)
-                        if (Diamonds[i]->render) {
-                            Diamonds[i]->coord.first = squareSide /2 + squareSide * j + width_r + 15 * (j+1);
-                            Diamonds[i]->coord.second = 10 + squareSide / 2;
-                            Diamonds[i]->render = false;
-                        }
-                    if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20)
-                        if (Diamonds[i]->render) {
-                            Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
-                            Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
-                            Diamonds[i]->render = false;
-                        }
-                    if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30)
-                        if (Diamonds[i]->render) {
-                            Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
-                            Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
-                            Diamonds[i]->render = false;
-                        }
+            for (int j = 0; j < 3; j++)
+                if (mouseX > width_r + (j + 1) * 20 + squareSide * j && mouseX < (j + 1) * squareSide + width_r + (j + 1) * 20) { // check if the diamand is dropped right
+                    if (sceneY < squareSide + 10 && sceneY > 10 && (Diamonds[i]->render))
+                    {
+                        Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
+                        Diamonds[i]->coord.second = 10 + squareSide / 2;
+                        Diamonds[i]->render = false;
+                    }
+
+                    else if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20 && (Diamonds[i]->render))
+                    {
+                        Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
+                        Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
+                        Diamonds[i]->render = false;
+                    }
+                    else if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30 && (Diamonds[i]->render))
+                    {
+                        Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
+                        Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
+                        Diamonds[i]->render = false;
+                    }
                 }
-                
+            if (Diamonds[i]->render) // if i drop the diamand in a random wrong place
+                Diamonds[i]->id = -1; // i make sure it is not rendered in the update function
         }
+
 
 }
 
