@@ -39,6 +39,7 @@ void Tema1::Init()
     camera->SetRotation(glm::vec3(0, 0, 0));
     camera->Update();
     GetCameraInput()->SetActive(false);
+    srand(time(0));
 
     squareSide = 100;
     outlineLength = 120;
@@ -214,15 +215,23 @@ void Tema1::Update(float deltaTimeSeconds)
         }
    
 
-    random = rand() % 100;
-    if (random == 30)
-        for (int i = 0; i < 3; i++) 
+    random = rand() % 50;
+    if (random == 10) {
+        x = (rand() % 3);
+        h = new Hexa("hexagon" + std::to_string((rand() % 4) + 1), true, { resolution.x - 10,  15 * x + squareSide/2 + squareSide * x });
+        Hexagons.push_back(h);
+    }
+ 
+    if (!Hexagons.empty())
+            for (int i = 0; i < Hexagons.size(); i++)
             {
+                Hexagons[i]->coord.first -= 100 * deltaTimeSeconds;
+               // Hexagons[i]->coord.second -= 100 * deltaTimeSeconds;
                 modelMatrix = glm::mat3(1); // Resetam matricea model 
-                modelMatrix *= transform2D::Translate(resolution.x - 10, 10 + 10 * i + squareSide/2 + squareSide *i);
-                hex = "hexagon" + std::to_string((rand() % 4) + 1);
-                RenderMesh2D(meshes[hex], shaders["VertexColor"], modelMatrix);
-            }
+                modelMatrix *= transform2D::Translate(Hexagons[i]->coord.first, Hexagons[i]->coord.second );
+                RenderMesh2D(meshes[Hexagons[i]->hex], shaders["VertexColor"], modelMatrix);
+
+        }
        
 }
 
