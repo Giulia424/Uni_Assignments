@@ -1,359 +1,256 @@
-#include "lab_m1/Tema1/Tema.h"
+#include "object2D.h"
 
 #include <vector>
-#include <iostream>
 
-#include "lab_m1/lab3/transform2D.h"
-#include "lab_m1/lab3/object2D.h"
-
+#include "core/engine.h"
+#include "utils/gl_utils.h"
 
 
-using namespace std;
-using namespace m1;
 
-
-/*
- *  To find out more about `FrameStart`, `Update`, `FrameEnd`
- *  and the order in which they are called, see `world.cpp`.
- */
-
-
-Tema1::Tema1()
+Mesh* object2D::CreateSquare(
+    const std::string &name,
+    glm::vec3 leftBottomCorner,
+    float length,
+    glm::vec3 color,
+    bool fill)
 {
+    glm::vec3 corner = leftBottomCorner;
+
+    std::vector<VertexFormat> vertices =
+    {
+        VertexFormat(corner, color),
+        VertexFormat(corner + glm::vec3(length, 0, 0), color),
+        VertexFormat(corner + glm::vec3(length, length, 0), color),
+        VertexFormat(corner + glm::vec3(0, length, 0), color)
+    };
+
+    Mesh* square = new Mesh(name);
+    std::vector<unsigned int> indices = { 0, 1, 2, 3 };
+
+    if (!fill) {
+        square->SetDrawMode(GL_LINE_LOOP);
+    } else {
+        // Draw 2 triangles. Add the remaining 2 indices
+        indices.push_back(0);
+        indices.push_back(2);
+    }
+
+
+    square->InitFromData(vertices, indices);
+    return square;
 }
 
 
-Tema1::~Tema1()
-{  
-   
-    //d = nullptr;
-}
 
-
-void Tema1::Init()
+Mesh* object2D::CreateLife(
+    const std::string& name,
+    glm::vec3 leftBottomCorner,
+    float length,
+    glm::vec3 color,
+    bool fill)
 {
-    glm::ivec2 resolution = window->GetResolution();
-    auto camera = GetSceneCamera();
-    camera->SetOrthographic(0, (float)resolution.x, 0, (float)resolution.y, 0.01f, 400);
-    camera->SetPosition(glm::vec3(0, 0, 50));
-    camera->SetRotation(glm::vec3(0, 0, 0));
-    camera->Update();
-    GetCameraInput()->SetActive(false);
-    srand(time(0));
+    glm::vec3 corner = leftBottomCorner;
 
-    squareSide = 100;
-    outlineLength = 120;
-    height_r = 320;
-    width_r = 40;
-    width_d = 30;
-    height_d = 50;
-    r = 40;
-    
+    std::vector<VertexFormat> vertices =
+    {
+        VertexFormat(corner, color),
+        VertexFormat(corner + glm::vec3(length, 0, 0), color),
+        VertexFormat(corner + glm::vec3(length, length, 0), color),
+        VertexFormat(corner + glm::vec3(0, length, 0), color)
+    };
 
-  
+    Mesh* square = new Mesh(name);
+    std::vector<unsigned int> indices = { 0, 1, 2, 3};
 
-    glm::vec3 corner1 = glm::vec3(0, 0, 0);
-    Mesh* dsquare = object2D::CreateSquare("dark_square", corner1, squareSide, glm::vec3(0.1, 0, 0.4), true);
-    AddMeshToList(dsquare);
+    indices.push_back(0);
+    indices.push_back(2);
+    indices.push_back(1);
 
-    glm::vec3 corner2 = glm::vec3(0, 0, 0);
-    Mesh* lsquare = object2D::CreateSquare("light_square", corner2, squareSide, glm::vec3(0.2, 0, 0.5), true);
-    AddMeshToList(lsquare);
+    indices.push_back(3);
 
-    glm::vec3 corner3 = glm::vec3(0, 0, 0);
-    Mesh* rectangular = object2D::CreateRectangular("rectangular", corner3, width_r, height_r, glm::vec3(0.2, 0, 0.6), true);
-    AddMeshToList(rectangular);
+    square->SetDrawMode(GL_LINE_LOOP);
 
-
-    glm::vec3 corner4 = glm::vec3(0, 0, 0);
-    Mesh* squareoutline = object2D::CreateSquareOutline("squareoutline", corner4, outlineLength, glm::vec3(0.2, 0, 0.6), true);
-    AddMeshToList(squareoutline);
-
-    glm::vec3 corner5 = glm::vec3(0, 0, 0);
-    Mesh* life = object2D::CreateLife("life", corner5, outlineLength, glm::vec3(0.2, 0, 0.6), true);
-    AddMeshToList(life);
-
-    glm::vec3 center1 = glm::vec3(0, 0, 1);
-    Mesh* diamond1 = object2D::CreateDiamond("diamond1", center1, height_d, width_d, glm::vec3(0.69f, 0.078f, 0.137f), true);
-    AddMeshToList(diamond1);
-
-    glm::vec3 center2 = glm::vec3(0, 0, 1);
-    Mesh* diamond2 = object2D::CreateDiamond("diamond2", center2, height_d, width_d, glm::vec3(0, 0, 1), true);
-    AddMeshToList(diamond2);
-
-    glm::vec3 center3 = glm::vec3(0, 0, 1);
-    Mesh* diamond3 = object2D::CreateDiamond("diamond3", center3, height_d, width_d, glm::vec3(0.778f, 0.735f, 0.157f), true);
-    AddMeshToList(diamond3);
-
-    glm::vec3 center4 = glm::vec3(0, 0, 1);
-    Mesh* diamond4 = object2D::CreateDiamond("diamond4", center4, height_d, width_d, glm::vec3(0, 0.6, 0.2), true);
-    AddMeshToList(diamond4);
-
-    glm::vec3 center5 = glm::vec3(0, 0, 1);
-    Mesh* hexagon1 = object2D::CreateHexagon("hexagon1",center5, r , glm::vec3(0.51f, 0.051f, 0.075f), glm::vec3(0.69f, 0.078f, 0.137f), true);
-    AddMeshToList(hexagon1);
-
-    glm::vec3 center6 = glm::vec3(0, 0, 1);
-    Mesh* hexagon2 = object2D::CreateHexagon("hexagon2", center6, r, glm::vec3(0, 0, 0.5), glm::vec3(0, 0, 1), true);
-    AddMeshToList(hexagon2);
-
-    glm::vec3 center7 = glm::vec3(0, 0, 1);
-    Mesh* hexagon3 = object2D::CreateHexagon("hexagon3", center7, r, glm::vec3(1, 0.986f, 0), glm::vec3(0.778f, 0.735f, 0.157f), true);
-    AddMeshToList(hexagon3);
-
-    glm::vec3 center8 = glm::vec3(0, 0, 1);
-    Mesh* hexagon4 = object2D::CreateHexagon("hexagon4", center8, r, glm::vec3(0, 0.4, 0.1), glm::vec3(0, 0.6, 0.2), true);
-    AddMeshToList(hexagon4);
-
-}
-
-
-void Tema1::FrameStart()
-{
-    // Clears the color buffer (using the previously set color) and depth buffer
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    resolution = window->GetResolution();
-    // Sets the screen area where to draw
-    glViewport(0, 0, resolution.x, resolution.y);
-}
-
-
-void Tema1::Update(float deltaTimeSeconds)
-{
-    modelMatrix = glm::mat3(1);
-    modelMatrix *= transform2D::Translate(500, 500);
-    //RenderMesh2D(meshes["hexagon1"], shaders["VertexColor"], modelMatrix);
-
-    modelMatrix = glm::mat3(1);
-
-    for (int i = 1; i < 8; i += 2) { // creez tabla, alternand culoriile patratelor
-        modelMatrix *= transform2D::Translate(resolution.x - i * squareSide - 10, 10);
-        RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
-        modelMatrix *= transform2D::Translate(0, squareSide + 10);
-        RenderMesh2D(meshes["light_square"], shaders["VertexColor"], modelMatrix);
-        modelMatrix *= transform2D::Translate(0, squareSide + 10);
-        RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
-        modelMatrix = glm::mat3(1); // Resetam matricea model 
-
-        modelMatrix *= transform2D::Translate(resolution.x - (i + 1) * squareSide - 10, 10);
-        RenderMesh2D(meshes["light_square"], shaders["VertexColor"], modelMatrix);
-        modelMatrix *= transform2D::Translate(0, squareSide + 10);
-        RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
-        modelMatrix *= transform2D::Translate(0, squareSide + 10);
-        RenderMesh2D(meshes["light_square"], shaders["VertexColor"], modelMatrix);
-        modelMatrix = glm::mat3(1); // Resetam matricea model 
-
-
-    }
-        modelMatrix = glm::mat3(1); // Resetam matricea model 
-        modelMatrix *= transform2D::Translate(10, 10);
-        RenderMesh2D(meshes["rectangular"], shaders["VertexColor"], modelMatrix);
-        modelMatrix = glm::mat3(1); // Resetam matricea model 
-
-    for (int i = 0; i < 3; i++) {
-        modelMatrix *= transform2D::Translate(width_r +20 + 20 * i+ squareSide * i, 10);
-        RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
-        modelMatrix *= transform2D::Translate(0, squareSide + 10);
-        RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
-        modelMatrix *= transform2D::Translate(0, squareSide + 10);
-        RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
-        modelMatrix = glm::mat3(1); // Resetam matricea model 
-
-    }
-
-    modelMatrix = glm::mat3(1); // Resetam matricea model 
-    modelMatrix *= transform2D::Translate(outlineLength, resolution.y - outlineLength - 30);
-    RenderMesh2D(meshes["squareoutline"], shaders["VertexColor"], modelMatrix);
-    for (int i = 2; i < 5; i++) { // crearea contururilor pentru romburi
-        modelMatrix *= transform2D::Translate(outlineLength * 1.5, 0);
-        RenderMesh2D(meshes["squareoutline"], shaders["VertexColor"], modelMatrix);
-    }
-    
-    modelMatrix *= transform2D::Translate(outlineLength / 2, outlineLength / 2);
-    RenderMesh2D(meshes["diamond1"], shaders["VertexColor"], modelMatrix);
-
-
-    modelMatrix *= transform2D::Translate(-1.5 * outlineLength, 0);
-    RenderMesh2D(meshes["diamond2"], shaders["VertexColor"], modelMatrix);
-
-    modelMatrix *= transform2D::Translate(-1.5 * outlineLength, 0);
-    RenderMesh2D(meshes["diamond3"], shaders["VertexColor"], modelMatrix);
-
-
-    modelMatrix *= transform2D::Translate(-1.5 * outlineLength, 0);
-    RenderMesh2D(meshes["diamond4"], shaders["VertexColor"], modelMatrix);
-
-
-
-    modelMatrix = glm::mat3(1); // Resetam matricea model 
-    modelMatrix *= transform2D::Translate(resolution.x - 1.5 * outlineLength, resolution.y - outlineLength - 30);
-    RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
-    modelMatrix = glm::mat3(1); // Resetam matricea model 
-    modelMatrix *= transform2D::Translate(resolution.x - 2.5 * outlineLength, resolution.y - outlineLength - 30);
-    RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
-    modelMatrix = glm::mat3(1); // Resetam matricea model 
-    modelMatrix *= transform2D::Translate(resolution.x - 3.5 * outlineLength, resolution.y - outlineLength - 30);
-    RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
-
-    
-    
-    if (!Diamonds.empty()) 
-        for (int i = 0; i < Diamonds.size(); i++)
-        {
-            modelMatrix = glm::mat3(1); // Resetam matricea model 
-            modelMatrix *= transform2D::Translate(Diamonds[i]->coord.first, Diamonds[i]->coord.second);
-            if (Diamonds[i]->id == 4)
-                RenderMesh2D(meshes["diamond4"], shaders["VertexColor"], modelMatrix);
-            else if (Diamonds[i]->id == 3)
-                RenderMesh2D(meshes["diamond3"], shaders["VertexColor"], modelMatrix);
-            else if (Diamonds[i]->id == 2)
-                RenderMesh2D(meshes["diamond2"], shaders["VertexColor"], modelMatrix);
-            else if (Diamonds[i]->id == 1)
-               RenderMesh2D(meshes["diamond1"], shaders["VertexColor"], modelMatrix);
-        }
-   
-
-    random = rand() % 50;
-    if (random == 10) {
-        x = (rand() % 3);
-        h = new Hexa("hexagon" + std::to_string((rand() % 4) + 1), true, { resolution.x - 10,  15 * x + squareSide/2 + squareSide * x });
-        Hexagons.push_back(h);
-    }
  
-    if (!Hexagons.empty())
-            for (int i = 0; i < Hexagons.size(); i++)
-            {
-                Hexagons[i]->coord.first -= 100 * deltaTimeSeconds;
-               // Hexagons[i]->coord.second -= 100 * deltaTimeSeconds;
-                modelMatrix = glm::mat3(1); // Resetam matricea model 
-                modelMatrix *= transform2D::Translate(Hexagons[i]->coord.first, Hexagons[i]->coord.second );
-                RenderMesh2D(meshes[Hexagons[i]->hex], shaders["VertexColor"], modelMatrix);
 
-        }
-       
+    square->InitFromData(vertices, indices);
+    return square;
 }
 
+Mesh* object2D::CreateSquareOutline(
+    const std::string& name,
+    glm::vec3 leftBottomCorner,
+    float length,
+    glm::vec3 color,
+    bool fill)
+    {
+        glm::vec3 corner = leftBottomCorner;
 
-void Tema1::FrameEnd()
-{
-    //DrawCoordinateSystem();
-
-}
-
-
-/*
- *  These are callback functions. To find more about callbacks and
- *  how they behave, see `input_controller.h`.
- */
-
-
-void Tema1::OnInputUpdate(float deltaTime, int mods)
-{
-    // Add smth
-
-
-}
-
-
-void Tema1::OnKeyPress(int key, int mods)
-{
-    // Add key press event
-}
-
-
-void Tema1::OnKeyRelease(int key, int mods)
-{
-    // Add key release event
-}
-
-
-void Tema1::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
-{
-    sceneY = 720 - mouseY;
-    if (!Diamonds.empty())
-        for (int i = 0; i < Diamonds.size(); i++)
+        std::vector<VertexFormat> vertices =
         {
-            if (Diamonds[i]->render) {
-                Diamonds[i]->coord.first = mouseX;
-                Diamonds[i]->coord.second = sceneY;
-            }
+            VertexFormat(corner, color),
+            VertexFormat(corner + glm::vec3(length, 0, 0), color),
+            VertexFormat(corner + glm::vec3(length, length, 0), color),
+            VertexFormat(corner + glm::vec3(0, length, 0), color)
+        };
 
-        }
+        Mesh* square = new Mesh(name);
+        std::vector<unsigned int> indices = { 0, 1, 2, 3 };
 
-    // Add mouse move event
+        square->SetDrawMode(GL_LINE_LOOP);
+
+
+        square->InitFromData(vertices, indices);
+        return square;
 }
 
 
-void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
-{
-    sceneY = 720 - mouseY;
-    if (button == 1) {
+    Mesh* object2D::CreateRectangular(
+        const std::string& name,
+        glm::vec3 leftBottomCorner,
+        float width,
+        float height,
+        glm::vec3 color,
+        bool fill)
+    {
+        glm::vec3 corner = leftBottomCorner;
 
-        for (float i = 1, j = 4; i < 6 && j > 0; i += 1.5, j--) { // anytime i drag a new diamond
-            if (mouseX > outlineLength * i && mouseX < outlineLength * (i + 1))
-                if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
-                {
-                    d = new Diam(j, true, { mouseX,sceneY });
-                    Diamonds.push_back(d);
-                }
+        std::vector<VertexFormat> vertices =
+        {
+            VertexFormat(corner, color),
+            VertexFormat(corner + glm::vec3(width, 0, 0), color),
+            VertexFormat(corner + glm::vec3(width, height, 0), color),
+            VertexFormat(corner + glm::vec3(0, height, 0), color)
+        };
+
+        Mesh* rect = new Mesh(name);
+        std::vector<unsigned int> indices = { 0, 1, 2, 3 };
+
+        if (!fill) {
+            rect->SetDrawMode(GL_LINE_LOOP);
         }
+        else {
+            // Draw 2 triangles. Add the remaining 2 indices
+            indices.push_back(0);
+            indices.push_back(2);
+        }
+
+        rect->InitFromData(vertices, indices);
+        return rect;
     }
-    if (button == 2) {
-        if (!Diamonds.empty()) // if i press an already dropped diamond
-            for (int i = 0; i < Diamonds.size(); i++)
-                if (!Diamonds[i]->render)  // initially render is true, and when the object is dropped correctly it becomes false
-                    if (mouseX > Diamonds[i]->coord.first - squareSide / 2 && mouseX < Diamonds[i]->coord.first + squareSide / 2)
-                        if (sceneY > Diamonds[i]->coord.second - squareSide / 2 && sceneY < Diamonds[i]->coord.second + squareSide / 2)
-                            Diamonds[i]->id = -1; // i make sure it is not rendered in the update function
+
+
+
+    Mesh* object2D::CreateDiamond(
+        const std::string& name,
+        glm::vec3 center,
+        float width,
+        float height,
+        glm::vec3 color,
+        bool fill)
+    {
+
+        std::vector<VertexFormat> vertices =
+        {
+            VertexFormat(center + glm::vec3(0, width, 0), color),
+            VertexFormat(center + glm::vec3(-height, 0, 0), color),
+            VertexFormat(center + glm::vec3(0, -width, 0), color),
+            VertexFormat(center + glm::vec3(height, 0, 0), color),
+
+            VertexFormat(center + glm::vec3(width / 2, 0, 0), color),
+            VertexFormat(center + glm::vec3(width * 1.1, height / 2, 0), color),
+            VertexFormat(center + glm::vec3(width * 1.1, -height / 2, 0), color),
+
+            //creare partea de aruncare a rombului
+
+        };
+
+        Mesh* diamond = new Mesh(name);
+        std::vector<unsigned int> indices = { 0, 1, 2,
+                                             2, 3, 0,
+                                             4, 5, 6,
+
+
+        };
+
+
+
+        diamond->InitFromData(vertices, indices);
+        return diamond;
     }
+    Mesh* object2D::CreateHexagon(
+        const std::string& name,
+        glm::vec3 center,
+        float r,
+        glm::vec3 color1,
+        glm::vec3 color2,
+        bool fill) 
+    {
+        //center = glm::vec3(0, 0, 0);
 
-}
+        std::vector<VertexFormat> vertices =
+        {   VertexFormat(center,color1),
+            VertexFormat(center + glm::vec3(r * cosf(RADIANS(0)), r * sin(RADIANS(0)), 0), color1),
+            VertexFormat(center + glm::vec3(r * cosf(RADIANS(300)), r * sinf(RADIANS(300)), 0), color1),
+            VertexFormat(center + glm::vec3(r * cosf(RADIANS(240)), r * sinf(RADIANS(240)),0), color1),
+            VertexFormat(center + glm::vec3(r * cosf(RADIANS(180)), r * sinf(RADIANS(180)), 0), color1),
+            VertexFormat(center + glm::vec3(r * cosf(RADIANS(120)), r * sinf(RADIANS(120)), 0), color1),
+            VertexFormat(center + glm::vec3(r * cosf(RADIANS(60)), r * sinf(RADIANS(60)), 0), color1),
+
+            VertexFormat(center + glm::vec3(r/2 * cosf(RADIANS(0)), r/2 * sin(RADIANS(0)), 1), color2),
+            VertexFormat(center + glm::vec3(r/2 * cosf(RADIANS(300)), r/2 * sinf(RADIANS(300)), 1), color2),
+            VertexFormat(center + glm::vec3(r/2 * cosf(RADIANS(240)), r/2 * sinf(RADIANS(240)),1), color2),
+            VertexFormat(center + glm::vec3(r/2 * cosf(RADIANS(180)), r/2 * sinf(RADIANS(180)), 1), color2),
+            VertexFormat(center + glm::vec3(r/2 * cosf(RADIANS(120)), r/2 * sinf(RADIANS(120)), 1), color2),
+            VertexFormat(center + glm::vec3(r/2 * cosf(RADIANS(60)), r/2 * sinf(RADIANS(60)), 1), color2),
+
+        };
+
+        Mesh* hexagon = new Mesh(name);
+        std::vector<unsigned int> indices = { 0, 1, 2,
+                                             0, 2, 3,
+                                             0, 3, 4,
+                                             0, 4, 5,
+                                             0, 5, 6,
+                                             0, 6, 1,
+
+                                             0, 7, 8,
+                                             0, 8, 9,
+                                             0, 9, 10,
+                                             0, 10, 11,
+                                             0, 11, 12,
+                                             0, 12, 7
+
+        };
+        hexagon->InitFromData(vertices, indices);
+        return hexagon;
+
+    }
+    Mesh* object2D::CreateStar(
+        const std::string& name,
+        glm::vec3 center,
+        float R,
+        glm::vec3 color,
+        bool fill) {
+
+        std::vector<VertexFormat> vertices =
+        {   VertexFormat(center,color),
+            VertexFormat(center + glm::vec3(0,R, 1), color),
+            VertexFormat(center + glm::vec3(R * cosf(RADIANS(18)),R * sinf(RADIANS(18)), 1), color),
+            VertexFormat(center + glm::vec3(R * cosf(RADIANS(54)),R * sinf(RADIANS(-54)), 1), color),
+            VertexFormat(center + glm::vec3(R * -cosf(RADIANS(54)),R * sinf(RADIANS(-54)),1), color),
+            VertexFormat(center + glm::vec3(R * -cosf(RADIANS(18)),R * sinf(RADIANS(18)), 1), color),
+            VertexFormat(center + glm::vec3(0,-R/2.5, 1), color),
+
+        };
 
 
-
-void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
-{
-    sceneY = 720 - mouseY;
-
-    if (!Diamonds.empty())
-        for (int i = 0; i < Diamonds.size(); i++) {       
-            for (int j = 0; j < 3; j++)
-                if (mouseX > width_r + (j + 1) * 20 + squareSide * j && mouseX < (j + 1) * squareSide + width_r + (j + 1) * 20) { // check if the diamand is dropped right
-                    if (sceneY < squareSide + 10 && sceneY > 10 && (Diamonds[i]->render))
-                    {
-                        Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
-                        Diamonds[i]->coord.second = 10 + squareSide / 2;
-                        Diamonds[i]->render = false;
-                    }
-
-                    else if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20 && (Diamonds[i]->render))
-                    {
-                        Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
-                        Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
-                        Diamonds[i]->render = false;
-                    }
-                    else if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30 && (Diamonds[i]->render))
-                    {
-                        Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
-                        Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
-                        Diamonds[i]->render = false;
-                    }
-                }
-            if (Diamonds[i]->render) // if i drop the diamand in a random wrong place
-                Diamonds[i]->id = -1; // i make sure it is not rendered in the update function
-        }
+        Mesh* star = new Mesh(name);
+        std::vector<unsigned int> indices = { 6,  1, 4,
+                                              3, 1, 6,
+                                              6, 2, 5
 
 
-}
-
-
-void Tema1::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
-{
-}
-
-
-void Tema1::OnWindowResize(int width, int height)
-{
-}
+        };
+        star->InitFromData(vertices, indices);
+        return star;
+    }
