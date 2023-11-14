@@ -242,7 +242,7 @@ void Tema1::Update(float deltaTimeSeconds)
 			else if (Diamonds[i]->id == 1)
 				RenderMesh2D(meshes["diamond1"], shaders["VertexColor"], modelMatrix);
 		}
-	random1 = rand() % 250;
+	random1 = rand() % 550;
 	if (random1 == 10) {
 		random2 = (rand() % 3);
 		randomid = (rand() % 4) + 1;
@@ -269,7 +269,7 @@ void Tema1::Update(float deltaTimeSeconds)
 
 
 	}
-	random3 = rand() % 400; // we are adding the stars that pop un on screen
+	random3 = rand() % 700; // we are adding the stars that pop un on screen
 	if (random3 == 10) {
 		x = rand() % resolution.x;
 		y = rand() % resolution.y;
