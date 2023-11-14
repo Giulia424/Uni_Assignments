@@ -224,7 +224,7 @@ void Tema1::Update(float deltaTimeSeconds)
         for (int j = 0; j < Hexagons.size(); j++)
         {   
             float distanceR = glm::distance(glm::vec2((Diamonds[i]->coord.first), Diamonds[i]->coord.second), glm::vec2((Hexagons[j]->coord.first), Hexagons[j]->coord.second));
-            if ( distanceR < Diamonds[i]->radius + Hexagons[j]->radius)
+            if ( distanceR < Diamonds[i]->radius + Hexagons[j]->radius && !Diamonds[i]->render) // initially render is true, and when the object is dropped correctly it becomes false
                 {
                     Diamonds[i]->scale = true;
                 }
@@ -256,7 +256,7 @@ void Tema1::Update(float deltaTimeSeconds)
         }
    
 
-    random1 = rand() % 1000;
+    random1 = rand() % 750;
     if (random1 == 10) {
         random2 = (rand() % 3);
         h = new Hexa("hexagon" + std::to_string((rand() % 4) + 1), true, r, false, 1,0,{ resolution.x - 10,  15 * random2 + squareSide/2 + squareSide * random2 });
@@ -277,15 +277,13 @@ void Tema1::Update(float deltaTimeSeconds)
                 
                 if (Hexagons[i]->coord.first < 0 && Hexagons[i]->render) {         
                     Hexagons[i]->render = false; //when 3 hexagons pass by
-                    nrLives--;
-                    cout << nrLives;
-                    
+                    nrLives--;                    
                 }
             }
 
    
 
-    random3 = rand() % 700;
+    random3 = rand() % 900;
     if (random3 == 10) {
         x = rand() % resolution.x;
         y = rand() % resolution.y;
@@ -296,12 +294,13 @@ void Tema1::Update(float deltaTimeSeconds)
         
         
         
-        for (int i = 0; i < Stars.size(); i++) {
-            
+    for (int i = 0; i < Stars.size(); i++)
+        if(Stars[i]->render)
+            {
             modelMatrix = glm::mat3(1); // Resetam matricea model 
             modelMatrix *= transform2D::Translate(Stars[i]->coord.first, Stars[i]->coord.second);
             RenderMesh2D(meshes["star1"], shaders["VertexColor"], modelMatrix);
-        }
+            }
 
 
        
@@ -363,27 +362,36 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
     sceneY = 720 - mouseY;
     if (button == 1) {
 
-        for (float i = 1, j = 4; i < 6 && j > 0; i += 1.5, j--) { // anytime i drag a new diamond
+        for (float i = 1, j = 4; i < 6 && j > 0; i += 1.5, j--) // anytime i drag a new diamond
             if (mouseX > outlineLength * i && mouseX < outlineLength * (i + 1))
                 if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
                 {
                     d = new Diam(j, true, width_d, false, 1, 0, { mouseX,sceneY });
                     Diamonds.push_back(d);
                 }
-        }
-    }
-    if (button == 2) {
-        if (!Diamonds.empty()) // if i press an already dropped diamond
-            for (int i = 0; i < Diamonds.size(); i++)
-                if (!Diamonds[i]->render)  // initially render is true, and when the object is dropped correctly it becomes false
-                    if (mouseX > Diamonds[i]->coord.first - squareSide / 2 && mouseX < Diamonds[i]->coord.first + squareSide / 2)
-                        if (sceneY > Diamonds[i]->coord.second - squareSide / 2 && sceneY < Diamonds[i]->coord.second + squareSide / 2)
-                        {
-                           // Diamonds[i]->id = -2; // i make sure it is not rendered in the update function
-                            Diamonds[i]->scale = true;
 
-                        }
+
+        for (int i = 0; i < Stars.size(); i++)
+            if (Stars[i]->render)
+                if (mouseX > Stars[i]->coord.first - Stars[i]->radius && mouseX < Stars[i]->coord.first + Stars[i]->radius)
+                    if (sceneY > Stars[i]->coord.second - Stars[i]->radius && sceneY < Stars[i]->coord.second + Stars[i]->radius)
+                    {
+                        nrStars++;
+                        Stars[i]->render = false;
+                    }
+
     }
+
+
+    if (button == 2) 
+        for (int i = 0; i < Diamonds.size(); i++)
+            if (!Diamonds[i]->render)  // initially render is true, and when the object is dropped correctly it becomes false
+                if (mouseX > Diamonds[i]->coord.first - squareSide / 2 && mouseX < Diamonds[i]->coord.first + squareSide / 2)
+                    if (sceneY > Diamonds[i]->coord.second - squareSide / 2 && sceneY < Diamonds[i]->coord.second + squareSide / 2)
+                        Diamonds[i]->scale = true;
+
+                        
+    
 
 }
 
