@@ -115,6 +115,18 @@ void Tema1::Init()
     Mesh* star1 = object2D::CreateStar("star1", center9, r, glm::vec3(0, 0.4, 0.1), true);
     AddMeshToList(star1);
 
+    Mesh* star2 = object2D::CreateStar("star2", center9, r, glm::vec3(0, 0.4, 0.1), true);
+    AddMeshToList(star2);
+
+    Mesh* star3 = object2D::CreateStar("star3", center9, r, glm::vec3(0, 0.4, 0.1), true);
+    AddMeshToList(star3);
+
+    Mesh* star4 = object2D::CreateStar("star4", center9, r, glm::vec3(0, 0.4, 0.1), true);
+    AddMeshToList(star4);
+
+    Mesh* point = object2D::CreateStar("point", center9, r, glm::vec3(0.396f, 0.078f, 0.459f), true);
+    AddMeshToList(point);
+
 }
 
 
@@ -257,7 +269,7 @@ void Tema1::Update(float deltaTimeSeconds)
         }
    
 
-    random1 = rand() % 750;
+    random1 = rand() % 7500;
     if (random1 == 10) {
         random2 = (rand() % 3);
         h = new Hexa("hexagon" + std::to_string((rand() % 4) + 1), true, r, false, 1,0,{ resolution.x - 10,  15 * random2 + squareSide/2 + squareSide * random2 });
@@ -313,7 +325,7 @@ void Tema1::Update(float deltaTimeSeconds)
         else 
             modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius * i, resolution.y - outlineLength - 50 );
         modelMatrix *= transform2D::Scale(0.5, 0.5);
-        RenderMesh2D(meshes["star1"], shaders["VertexColor"], modelMatrix);
+        RenderMesh2D(meshes["point"], shaders["VertexColor"], modelMatrix);
     }
 
        
