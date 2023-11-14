@@ -213,7 +213,7 @@ void Tema1::Update(float deltaTimeSeconds)
 		for (float j = 0; j < Hexagons.size(); j++)
 		{
 			float distanceR = glm::distance(glm::vec2((Diamonds[i]->coord.first), Diamonds[i]->coord.second), glm::vec2((Hexagons[j]->coord.first), Hexagons[j]->coord.second));
-			if (distanceR < Diamonds[i]->radius + Hexagons[j]->radius && !Diamonds[i]->render) // initially render is true, and when the object is dropped correctly it becomes false
+			if (distanceR < Diamonds[i]->radius + Hexagons[j]->radius && Diamonds[i]->render) // initially render is true, and when the object is dropped correctly it becomes false
 			{
 				Diamonds[i]->scale = true;
 			}
@@ -321,11 +321,11 @@ void Tema1::Update(float deltaTimeSeconds)
 		for (int j = 0; j < Diamonds.size(); j++) // trying to start the right bullets
 			if (abs(Diamonds[j]->coord.second - Hexagons[i]->coord.second) < 20)
 				if (Diamonds[j]->id == Hexagons[i]->id)
-					if (!Diamonds[j]->render)
-						{
-							b = new Bullet(Diamonds[j]->id, true, r, { Diamonds[j]->coord.first,  Diamonds[j]->coord.second });
-							Bullets.push_back(b);
-						}
+					if (Diamonds[j]->render)
+					{
+						b = new Bullet(Diamonds[j]->id, true, r, { Diamonds[j]->coord.first,  Diamonds[j]->coord.second });
+						Bullets.push_back(b);
+					}
 
 	for (float i = 0; i < Bullets.size(); i++)
 		if (Bullets[i]->render)
@@ -383,7 +383,7 @@ void Tema1::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 	if (!Diamonds.empty())
 		for (int i = 0; i < Diamonds.size(); i++)
 		{
-			if (Diamonds[i]->render) {
+			if (!Diamonds[i]->render) {
 				Diamonds[i]->coord.first = mouseX;
 				Diamonds[i]->coord.second = sceneY;
 			}
@@ -398,7 +398,7 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 			if (mouseX > outlineLength * i && mouseX < outlineLength * (i + 1))
 				if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
 				{
-					d = new Diam(j, true, width_d, false, 1, 0, { mouseX,sceneY });
+					d = new Diam(j, false, width_d, false, 1, 0, { mouseX,sceneY });
 					Diamonds.push_back(d);
 				}
 		for (int i = 0; i < Stars.size(); i++) // when we press a star we increment our points
@@ -412,7 +412,7 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 	}
 	if (button == 2)
 		for (int i = 0; i < Diamonds.size(); i++)
-			if (!Diamonds[i]->render)  // initially render is true, and when the object is dropped correctly it becomes false
+			if (Diamonds[i]->render)  // initially render is true, and when the object is dropped correctly it becomes false
 				if (mouseX > Diamonds[i]->coord.first - squareSide / 2 && mouseX < Diamonds[i]->coord.first + squareSide / 2)
 					if (sceneY > Diamonds[i]->coord.second - squareSide / 2 && sceneY < Diamonds[i]->coord.second + squareSide / 2)
 						Diamonds[i]->scale = true;
@@ -425,14 +425,14 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 		for (int i = 0; i < Diamonds.size(); i++) {
 			for (int j = 0; j < 3; j++)
 				if (mouseX > width_r + (j + 1) * 20 + squareSide * j && mouseX < (j + 1) * squareSide + width_r + (j + 1) * 20) { // check if the diamand is dropped right
-					if (sceneY < squareSide + 10 && sceneY > 10 && (Diamonds[i]->render))
+					if (sceneY < squareSide + 10 && sceneY > 10 && (!Diamonds[i]->render))
 					{
 						Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
 						Diamonds[i]->coord.second = 10 + squareSide / 2;
 						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford a diamond
 						{
-							Diamonds[i]->render = false;
-							
+							Diamonds[i]->render = true;
+
 						}
 						if (Diamonds[i]->id == 4 && nrStars >= 1)
 							nrStars--;
@@ -450,13 +450,13 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 								nrStars--;
 
 					}
-					else if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20 && (Diamonds[i]->render))
+					else if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20 && (!Diamonds[i]->render))
 					{
 						Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
 						Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
 						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford a diamond
 						{
-							Diamonds[i]->render = false;
+							Diamonds[i]->render = true;
 						}
 						if (Diamonds[i]->id == 4 && nrStars >= 1)
 							nrStars--;
@@ -473,13 +473,13 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 							for (int i = 0; i < 4; i++)
 								nrStars--;
 					}
-					else if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30 && (Diamonds[i]->render))
+					else if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30 && (!Diamonds[i]->render))
 					{
 						Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
 						Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
 						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford a diamond
 						{
-							Diamonds[i]->render = false;
+							Diamonds[i]->render = true;
 						}
 						if (Diamonds[i]->id == 4 && nrStars >= 1)
 							nrStars--;
@@ -497,7 +497,7 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 								nrStars--;
 					}
 				}
-			if (Diamonds[i]->render) // if i drop the diamand in a random wrong place
+			if (!Diamonds[i]->render) // if i drop the diamand in a random wrong place
 				Diamonds[i]->id = -1; // i make sure it is not rendered in the update function
 		}
 }
