@@ -214,9 +214,9 @@ void Tema1::Update(float deltaTimeSeconds)
 		{
 			float distanceR = glm::distance(glm::vec2((Diamonds[i]->coord.first), Diamonds[i]->coord.second), glm::vec2((Hexagons[j]->coord.first), Hexagons[j]->coord.second));
 			if (distanceR < Diamonds[i]->radius + Hexagons[j]->radius && !Diamonds[i]->render) // initially render is true, and when the object is dropped correctly it becomes false
-					{
-						Diamonds[i]->scale = true;
-					}
+			{
+				Diamonds[i]->scale = true;
+			}
 		}
 
 	if (!Diamonds.empty())
@@ -242,11 +242,13 @@ void Tema1::Update(float deltaTimeSeconds)
 			else if (Diamonds[i]->id == 1)
 				RenderMesh2D(meshes["diamond1"], shaders["VertexColor"], modelMatrix);
 		}
-	random1 = rand() % 500;
+	random1 = rand() % 250;
 	if (random1 == 10) {
 		random2 = (rand() % 3);
-		h = new Hexa("hexagon" + std::to_string((rand() % 4) + 1), true, r, false, 1, 0, { resolution.x - 10,  15 * random2 + squareSide / 2 + squareSide * random2 });
+		randomid = (rand() % 4) + 1;
+		h = new Hexa(randomid, true, r, false, 1, 0, { resolution.x - 10,  15 * random2 + squareSide / 2 + squareSide * random2 });
 		Hexagons.push_back(h);
+
 	}
 	angularStep += deltaTimeSeconds;
 	for (float i = 0; i < Hexagons.size(); i++)
@@ -255,14 +257,19 @@ void Tema1::Update(float deltaTimeSeconds)
 		modelMatrix = glm::mat3(1); // Resetam matricea model 
 		modelMatrix *= transform2D::Translate(Hexagons[i]->coord.first, Hexagons[i]->coord.second);
 		modelMatrix *= transform2D::Rotate(angularStep);
-		RenderMesh2D(meshes[Hexagons[i]->hex], shaders["VertexColor"], modelMatrix);
+		int a = Hexagons[i]->id;
+		RenderMesh2D(meshes["hexagon" + std::to_string(a)], shaders["VertexColor"], modelMatrix);
+
+
 
 		if (Hexagons[i]->coord.first < 0 && Hexagons[i]->render) {
 			Hexagons[i]->render = false; //when 3 hexagons pass by
 			nrLives--;
 		}
+
+
 	}
-	random3 = rand() % 200; // we are adding the stars that pop un on screen
+	random3 = rand() % 400; // we are adding the stars that pop un on screen
 	if (random3 == 10) {
 		x = rand() % resolution.x;
 		y = rand() % resolution.y;
@@ -310,6 +317,16 @@ void Tema1::Update(float deltaTimeSeconds)
 		RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
 	}
 
+	for (int i = 0; i < Hexagons.size(); i++)
+		for (int j = 0; j < Diamonds.size(); j++) // trying to start the right bullets
+			if (abs(Diamonds[j]->coord.second - Hexagons[i]->coord.second) < 20)
+				if (Diamonds[j]->id == Hexagons[i]->id)
+					if (!Diamonds[j]->render)
+						{
+							b = new Bullet(Diamonds[j]->id, true, r, { Diamonds[j]->coord.first,  Diamonds[j]->coord.second });
+							Bullets.push_back(b);
+						}
+
 	for (float i = 0; i < Bullets.size(); i++)
 		if (Bullets[i]->render)
 		{
@@ -326,6 +343,7 @@ void Tema1::Update(float deltaTimeSeconds)
 			else if (Bullets[i]->id == 1)
 				RenderMesh2D(meshes["bullet1"], shaders["VertexColor"], modelMatrix);
 		}
+
 }
 
 
@@ -414,23 +432,22 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford a diamond
 						{
 							Diamonds[i]->render = false;
-							b = new Bullet(Diamonds[i]->id, true, r, { Diamonds[i]->coord.first,  Diamonds[i]->coord.second });
-							Bullets.push_back(b);
+							
 						}
 						if (Diamonds[i]->id == 4 && nrStars >= 1)
 							nrStars--;
 						else if (Diamonds[i]->id == 3 && nrStars >= 2) {
 							for (int i = 0; i < 2; i++)
-									nrStars--;
+								nrStars--;
 
 						}
 						else if (Diamonds[i]->id == 2 && nrStars >= 3) {
 							for (int i = 0; i < 3; i++)
-									nrStars--;
+								nrStars--;
 						}
 						else if (Diamonds[i]->id == 1 && nrStars >= 4)
 							for (int i = 0; i < 4; i++)
-									nrStars--;
+								nrStars--;
 
 					}
 					else if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20 && (Diamonds[i]->render))
@@ -440,8 +457,6 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford a diamond
 						{
 							Diamonds[i]->render = false;
-							b = new Bullet(Diamonds[i]->id, true, r, { Diamonds[i]->coord.first,  Diamonds[i]->coord.second });
-							Bullets.push_back(b);
 						}
 						if (Diamonds[i]->id == 4 && nrStars >= 1)
 							nrStars--;
@@ -465,8 +480,6 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford a diamond
 						{
 							Diamonds[i]->render = false;
-							b = new Bullet(Diamonds[i]->id, true, r, { Diamonds[i]->coord.first,  Diamonds[i]->coord.second });
-							Bullets.push_back(b);
 						}
 						if (Diamonds[i]->id == 4 && nrStars >= 1)
 							nrStars--;
