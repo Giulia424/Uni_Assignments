@@ -50,6 +50,7 @@ void Tema1::Init()
     r = 40;
     angularStep = 0;
     nrLives = 3;
+    nrPoints = 0;
     
 
   
@@ -199,7 +200,7 @@ void Tema1::Update(float deltaTimeSeconds)
 
 
     modelMatrix = glm::mat3(1); // Resetam matricea model 
-    modelMatrix *= transform2D::Translate(resolution.x - 1.5 * outlineLength, resolution.y - outlineLength - 30);
+    modelMatrix *= transform2D::Translate(resolution.x - 3.5 * outlineLength, resolution.y - outlineLength - 30);
     if(nrLives > 2)
         RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
     else 
@@ -213,7 +214,7 @@ void Tema1::Update(float deltaTimeSeconds)
         RenderMesh2D(meshes["death"], shaders["VertexColor"], modelMatrix);
 
     modelMatrix = glm::mat3(1); // Resetam matricea model 
-    modelMatrix *= transform2D::Translate(resolution.x - 3.5 * outlineLength, resolution.y - outlineLength - 30);
+    modelMatrix *= transform2D::Translate(resolution.x - 1.5 * outlineLength, resolution.y - outlineLength - 30);
     if (nrLives > 0)
         RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
     else
@@ -283,7 +284,7 @@ void Tema1::Update(float deltaTimeSeconds)
 
    
 
-    random3 = rand() % 900;
+    random3 = rand() % 85;
     if (random3 == 10) {
         x = rand() % resolution.x;
         y = rand() % resolution.y;
@@ -302,6 +303,18 @@ void Tema1::Update(float deltaTimeSeconds)
             RenderMesh2D(meshes["star1"], shaders["VertexColor"], modelMatrix);
             }
 
+    for (int i = 0; i < nrPoints; i++) {
+        modelMatrix = glm::mat3(1); // Resetam matricea 
+        if (i > 15)
+            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius * (i - 15), resolution.y - outlineLength - 50 - Stars[i]->radius * 2);
+        else if(i > 8)
+            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius * (i - 8), resolution.y - outlineLength - 50 - Stars[i]->radius );
+
+        else 
+            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius * i, resolution.y - outlineLength - 50 );
+        modelMatrix *= transform2D::Scale(0.5, 0.5);
+        RenderMesh2D(meshes["star1"], shaders["VertexColor"], modelMatrix);
+    }
 
        
 }
@@ -376,7 +389,7 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
                 if (mouseX > Stars[i]->coord.first - Stars[i]->radius && mouseX < Stars[i]->coord.first + Stars[i]->radius)
                     if (sceneY > Stars[i]->coord.second - Stars[i]->radius && sceneY < Stars[i]->coord.second + Stars[i]->radius)
                     {
-                        nrStars++;
+                        nrPoints++;
                         Stars[i]->render = false;
                     }
 
