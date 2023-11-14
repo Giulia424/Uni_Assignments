@@ -112,16 +112,16 @@ void Tema1::Init()
     AddMeshToList(hexagon4);
 
     glm::vec3 center9 = glm::vec3(0, 0, 1);
-    Mesh* bullet1 = object2D::CreateStar("bullet1", center9, r, glm::vec3(0, 0.4, 0.1), true);
+    Mesh* bullet1 = object2D::CreateStar("bullet1", center9, r, glm::vec3(0.69f, 0.078f, 0.137f), true);
     AddMeshToList(bullet1);
 
-    Mesh* bullet2 = object2D::CreateStar("bullet2", center9, r, glm::vec3(0, 0.4, 0.1), true);
+    Mesh* bullet2 = object2D::CreateStar("bullet2", center9, r, glm::vec3(0, 0, 1), true);
     AddMeshToList(bullet2);
 
-    Mesh* bullet3= object2D::CreateStar("bullet3", center9, r, glm::vec3(0, 0.4, 0.1), true);
+    Mesh* bullet3= object2D::CreateStar("bullet3", center9, r, glm::vec3(0.778f, 0.735f, 0.157f), true);
     AddMeshToList(bullet3);
 
-    Mesh* bullet4 = object2D::CreateStar("bullet4", center9, r, glm::vec3(0, 0.4, 0.1), true);
+    Mesh* bullet4 = object2D::CreateStar("bullet4", center9, r, glm::vec3(0, 0.6, 0.2), true);
     AddMeshToList(bullet4);
 
     Mesh* star = object2D::CreateStar("star", center9, r, glm::vec3(0.396f, 0.078f, 0.459f), true);
@@ -269,7 +269,7 @@ void Tema1::Update(float deltaTimeSeconds)
         }
    
 
-    random1 = rand() % 750;
+    random1 = rand() % 500;
     if (random1 == 10) {
         random2 = (rand() % 3);
         h = new Hexa("hexagon" + std::to_string((rand() % 4) + 1), true, r, false, 1,0,{ resolution.x - 10,  15 * random2 + squareSide/2 + squareSide * random2 });
@@ -296,7 +296,7 @@ void Tema1::Update(float deltaTimeSeconds)
 
    
 
-    random3 = rand() % 850;
+    random3 = rand() % 650;
     if (random3 == 10) {
         x = rand() % resolution.x;
         y = rand() % resolution.y;
@@ -311,8 +311,15 @@ void Tema1::Update(float deltaTimeSeconds)
             {
             modelMatrix = glm::mat3(1); // Resetam matricea model 
             modelMatrix *= transform2D::Translate(Stars[i]->coord.first, Stars[i]->coord.second);
-            RenderMesh2D(meshes["star1"], shaders["VertexColor"], modelMatrix);
+            RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
             }
+
+    modelMatrix = glm::mat3(1); // we are rendering the prices for the diamonds
+    modelMatrix *= transform2D::Translate(outlineLength + 15, resolution.y - outlineLength - 50);
+    modelMatrix *= transform2D::Scale(0.35, 0.35);
+    RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
+
+
 
     for (int i = 0; i < nrStars; i++)
     {
@@ -331,6 +338,25 @@ void Tema1::Update(float deltaTimeSeconds)
         modelMatrix *= transform2D::Scale(0.25, 0.25);
         RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
     }
+
+
+    for (int i = 0; i < Bullets.size(); i++)
+        if (Bullets[i]->render)
+        {
+            Bullets[i]->coord.first += 100 * deltaTimeSeconds;
+            modelMatrix = glm::mat3(1); // Resetam matricea model 
+            modelMatrix *= transform2D::Translate(Bullets[i]->coord.first, Bullets[i]->coord.second);
+
+            modelMatrix *= transform2D::Rotate(angularStep);
+            if (Bullets[i]->id == 4)
+                RenderMesh2D(meshes["bullet4"], shaders["VertexColor"], modelMatrix);
+            else if (Bullets[i]->id == 3)
+                RenderMesh2D(meshes["bullet3"], shaders["VertexColor"], modelMatrix);
+            else if (Bullets[i]->id == 2)
+                RenderMesh2D(meshes["bullet2"], shaders["VertexColor"], modelMatrix);
+            else if (Bullets[i]->id == 1)
+                RenderMesh2D(meshes["bullet1"], shaders["VertexColor"], modelMatrix);
+        }
 
        
 }
@@ -397,6 +423,8 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
                 {
                     d = new Diam(j, true, width_d, false, 1, 0, { mouseX,sceneY });
                     Diamonds.push_back(d);
+                   
+
                 }
 
 
@@ -439,6 +467,8 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
                         Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
                         Diamonds[i]->coord.second = 10 + squareSide / 2;
                         Diamonds[i]->render = false;
+                        b = new Bullet( Diamonds[i]->id, true, r, {Diamonds[i]->coord.first,  Diamonds[i]->coord.second});
+                        Bullets.push_back(b);
                     }
 
                     else if (sceneY < 2 * squareSide + 20 && sceneY > squareSide + 20 && (Diamonds[i]->render))
@@ -446,12 +476,16 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
                         Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
                         Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
                         Diamonds[i]->render = false;
+                        b = new Bullet(Diamonds[i]->id, true, r, { Diamonds[i]->coord.first,  Diamonds[i]->coord.second });
+                        Bullets.push_back(b);
                     }
                     else if (sceneY < 3 * squareSide + 30 && sceneY > 2 * squareSide + 30 && (Diamonds[i]->render))
                     {
                         Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
                         Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
                         Diamonds[i]->render = false;
+                        b = new Bullet(Diamonds[i]->id, true, r, { Diamonds[i]->coord.first,  Diamonds[i]->coord.second });
+                        Bullets.push_back(b);
                     }
                 }
             if (Diamonds[i]->render) // if i drop the diamand in a random wrong place
