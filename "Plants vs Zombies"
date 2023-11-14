@@ -51,7 +51,15 @@ void Tema1::Init()
     angularStep = 0;
     nrLives = 3;
     nrStars = 0;
-    
+   
+
+    for (int i = 0; i < 8; i++) { // we add the initial nr of stars 
+        nrStars++;
+        cout << nrStars;
+        s = new Star(0, true, r, { 0,0 });
+        Stars.push_back(s);
+
+    }
 
   
 
@@ -233,8 +241,8 @@ void Tema1::Update(float deltaTimeSeconds)
         RenderMesh2D(meshes["death"], shaders["VertexColor"], modelMatrix);
 
     // we make sure the diamonds disappear if they've been hit by hexagons
-    for (int i = 0; i < Diamonds.size(); i++)
-        for (int j = 0; j < Hexagons.size(); j++)
+    for (float i = 0; i < Diamonds.size(); i++)
+        for (float j = 0; j < Hexagons.size(); j++)
         {   
             float distanceR = glm::distance(glm::vec2((Diamonds[i]->coord.first), Diamonds[i]->coord.second), glm::vec2((Hexagons[j]->coord.first), Hexagons[j]->coord.second));
             if ( distanceR < Diamonds[i]->radius + Hexagons[j]->radius && !Diamonds[i]->render) // initially render is true, and when the object is dropped correctly it becomes false
@@ -244,7 +252,7 @@ void Tema1::Update(float deltaTimeSeconds)
         }
     
     if (!Diamonds.empty()) 
-        for (int i = 0; i < Diamonds.size(); i++)
+        for (float i = 0; i < Diamonds.size(); i++)
         {
             modelMatrix = glm::mat3(1); // Resetam matricea model 
             modelMatrix *= transform2D::Translate(Diamonds[i]->coord.first, Diamonds[i]->coord.second);
@@ -280,7 +288,7 @@ void Tema1::Update(float deltaTimeSeconds)
    
 
     angularStep += deltaTimeSeconds;
-            for (int i = 0; i < Hexagons.size(); i++)
+            for (float i = 0; i < Hexagons.size(); i++)
             {
                 Hexagons[i]->coord.first -= 100 * deltaTimeSeconds;
                 modelMatrix = glm::mat3(1); // Resetam matricea model 
@@ -294,19 +302,20 @@ void Tema1::Update(float deltaTimeSeconds)
                 }
             }
 
-   
 
-    random3 = rand() % 650;
+
+
+    random3 = rand() % 650; // we are adding the stars that pop un on screen
     if (random3 == 10) {
         x = rand() % resolution.x;
         y = rand() % resolution.y;
-        s = new Star((rand() % 4) + 1, true, r, { x,y });
+        s = new Star(0, true, r, { x,y });
         Stars.push_back(s);
     }
         
         
         
-    for (int i = 0; i < Stars.size(); i++)
+    for (float i = 0; i < Stars.size(); i++)
         if(Stars[i]->render)
             {
             modelMatrix = glm::mat3(1); // Resetam matricea model 
@@ -314,14 +323,24 @@ void Tema1::Update(float deltaTimeSeconds)
             RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
             }
 
-    modelMatrix = glm::mat3(1); // we are rendering the prices for the diamonds
-    modelMatrix *= transform2D::Translate(outlineLength + 15, resolution.y - outlineLength - 50);
-    modelMatrix *= transform2D::Scale(0.35, 0.35);
-    RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
+  
+
+   for (float i = 1, j = 1; i < 6 && j < 5; i += 1.5f, j++)  // we are rendering the prices for the diamonds
+    {
+        modelMatrix = glm::mat3(1);
+        modelMatrix *= transform2D::Translate(i * outlineLength + 15, resolution.y - outlineLength - 50);
+        modelMatrix *= transform2D::Scale(0.35, 0.35);
+        RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
+        for (int k = 1; k < j; k++) {
+            modelMatrix *= transform2D::Translate(r * 2, 0);
+            RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
+
+        }
+
+    }
 
 
-
-    for (int i = 0; i < nrStars; i++)
+    for (float i = 0; i < nrStars; i++) // we add the points/stars we get
     {
         modelMatrix = glm::mat3(1); // Resetam matricea 
         if (i >= 64)
@@ -340,7 +359,7 @@ void Tema1::Update(float deltaTimeSeconds)
     }
 
 
-    for (int i = 0; i < Bullets.size(); i++)
+    for (float i = 0; i < Bullets.size(); i++)
         if (Bullets[i]->render)
         {
             Bullets[i]->coord.first += 100 * deltaTimeSeconds;
@@ -423,8 +442,7 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
                 {
                     d = new Diam(j, true, width_d, false, 1, 0, { mouseX,sceneY });
                     Diamonds.push_back(d);
-                   
-
+                    // add substraction of stars when buying diamonds
                 }
 
 
