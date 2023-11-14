@@ -315,16 +315,21 @@ void Tema1::Update(float deltaTimeSeconds)
             RenderMesh2D(meshes["star1"], shaders["VertexColor"], modelMatrix);
             }
 
-    for (int i = 0; i < nrPoints; i++) {
+    for (int i = 0; i < nrPoints; i++)
+    {
         modelMatrix = glm::mat3(1); // Resetam matricea 
-        if (i > 15)
-            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius * (i - 15), resolution.y - outlineLength - 50 - Stars[i]->radius * 2);
-        else if(i > 8)
-            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius * (i - 8), resolution.y - outlineLength - 50 - Stars[i]->radius );
-
+        if (i >= 64)
+            return;
+        if (i > 48)
+            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius/2 * (i - 48), resolution.y - outlineLength - 50 - Stars[i]->radius/2 * 3);
+        else if (i >=32)
+            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius/2 * (i - 32), resolution.y - outlineLength - 50 - Stars[i]->radius/2 * 2);
+        else if(i > 16)
+            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius/2 * (i - 16), resolution.y - outlineLength - 50 - Stars[i]->radius/2 );
         else 
-            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius * i, resolution.y - outlineLength - 50 );
-        modelMatrix *= transform2D::Scale(0.5, 0.5);
+            modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + Stars[i]->radius/2 * i, resolution.y - outlineLength - 50 );
+        
+        modelMatrix *= transform2D::Scale(0.25, 0.25);
         RenderMesh2D(meshes["point"], shaders["VertexColor"], modelMatrix);
     }
 
