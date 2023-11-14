@@ -49,7 +49,7 @@ void Tema1::Init()
     height_d = 50;
     r = 40;
     angularStep = 0;
-    scaleStep = 1;
+    nrLives = 3;
     
 
   
@@ -74,6 +74,9 @@ void Tema1::Init()
     glm::vec3 corner5 = glm::vec3(0, 0, 0);
     Mesh* life = object2D::CreateLife("life", corner5, outlineLength, glm::vec3(0.2, 0, 0.6), true);
     AddMeshToList(life);
+
+    Mesh* death = object2D::CreateDeath("death", corner5, outlineLength, glm::vec3(0.2, 0, 0.6), true);
+    AddMeshToList(death);
 
     glm::vec3 center1 = glm::vec3(0, 0, 1);
     Mesh* diamond1 = object2D::CreateDiamond("diamond1", center1, height_d, width_d, glm::vec3(0.69f, 0.078f, 0.137f), true);
@@ -130,7 +133,9 @@ void Tema1::Update(float deltaTimeSeconds)
 {
     modelMatrix = glm::mat3(1);
     modelMatrix *= transform2D::Translate(500, 500);
-    //RenderMesh2D(meshes["hexagon1"], shaders["VertexColor"], modelMatrix);
+
+    if (!nrLives)
+        Exit();
 
     modelMatrix = glm::mat3(1);
 
@@ -195,14 +200,35 @@ void Tema1::Update(float deltaTimeSeconds)
 
     modelMatrix = glm::mat3(1); // Resetam matricea model 
     modelMatrix *= transform2D::Translate(resolution.x - 1.5 * outlineLength, resolution.y - outlineLength - 30);
-    RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
+    if(nrLives > 2)
+        RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
+    else 
+        RenderMesh2D(meshes["death"], shaders["VertexColor"], modelMatrix);
+
     modelMatrix = glm::mat3(1); // Resetam matricea model 
     modelMatrix *= transform2D::Translate(resolution.x - 2.5 * outlineLength, resolution.y - outlineLength - 30);
-    RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
+    if (nrLives > 1)
+        RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
+    else
+        RenderMesh2D(meshes["death"], shaders["VertexColor"], modelMatrix);
+
     modelMatrix = glm::mat3(1); // Resetam matricea model 
     modelMatrix *= transform2D::Translate(resolution.x - 3.5 * outlineLength, resolution.y - outlineLength - 30);
-    RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
+    if (nrLives > 0)
+        RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
+    else
+        RenderMesh2D(meshes["death"], shaders["VertexColor"], modelMatrix);
 
+    // we make sure the diamonds disappear if they've been hit by hexagons
+    for (int i = 0; i < Diamonds.size(); i++)
+        for (int j = 0; j < Hexagons.size(); j++)
+        {   
+            float distanceR = glm::distance(glm::vec2((Diamonds[i]->coord.first), Diamonds[i]->coord.second), glm::vec2((Hexagons[j]->coord.first), Hexagons[j]->coord.second));
+            if ( distanceR < Diamonds[i]->radius + Hexagons[j]->radius)
+                {
+                    Diamonds[i]->scale = true;
+                }
+        }
     
     if (!Diamonds.empty()) 
         for (int i = 0; i < Diamonds.size(); i++)
@@ -211,11 +237,11 @@ void Tema1::Update(float deltaTimeSeconds)
             modelMatrix *= transform2D::Translate(Diamonds[i]->coord.first, Diamonds[i]->coord.second);
             if (Diamonds[i]->scale) { // we minimize the star if the player right clicked
 
-                if (scaleStep > 0) { 
-                    scaleStep -= deltaTimeSeconds;
-                    modelMatrix *= transform2D::Scale(scaleStep, scaleStep);
+                if (Diamonds[i]->scaleStep > 0) { 
+                    Diamonds[i]->scaleStep -= deltaTimeSeconds;
+                    modelMatrix *= transform2D::Scale(Diamonds[i]->scaleStep, Diamonds[i]->scaleStep);
                 }
-                if (scaleStep < 0) {
+                if (Diamonds[i]->scaleStep < 0) {
                     Diamonds[i]->id = -2; // we make sure it disappears in the end
                 }
             }
@@ -230,15 +256,17 @@ void Tema1::Update(float deltaTimeSeconds)
         }
    
 
-    random1 = rand() % 500;
+    random1 = rand() % 1000;
     if (random1 == 10) {
         random2 = (rand() % 3);
-        h = new Hexa("hexagon" + std::to_string((rand() % 4) + 1), true, { resolution.x - 10,  15 * random2 + squareSide/2 + squareSide * random2 });
+        h = new Hexa("hexagon" + std::to_string((rand() % 4) + 1), true, r, false, 1,0,{ resolution.x - 10,  15 * random2 + squareSide/2 + squareSide * random2 });
         Hexagons.push_back(h);
     }
 
+
+   
+
     angularStep += deltaTimeSeconds;
-    if (!Hexagons.empty())
             for (int i = 0; i < Hexagons.size(); i++)
             {
                 Hexagons[i]->coord.first -= 100 * deltaTimeSeconds;
@@ -246,15 +274,22 @@ void Tema1::Update(float deltaTimeSeconds)
                 modelMatrix *= transform2D::Translate(Hexagons[i]->coord.first, Hexagons[i]->coord.second );
                 modelMatrix *= transform2D::Rotate(angularStep);
                 RenderMesh2D(meshes[Hexagons[i]->hex], shaders["VertexColor"], modelMatrix);
-
+                
+                if (Hexagons[i]->coord.first < 0 && Hexagons[i]->render) {         
+                    Hexagons[i]->render = false; //when 3 hexagons pass by
+                    nrLives--;
+                    cout << nrLives;
+                    
+                }
             }
+
    
 
-    random3 = rand() % 500;
+    random3 = rand() % 700;
     if (random3 == 10) {
         x = rand() % resolution.x;
         y = rand() % resolution.y;
-        s = new Star((rand() % 4) + 1, true, { x,y });
+        s = new Star((rand() % 4) + 1, true, r, { x,y });
         Stars.push_back(s);
         nrStars++;
     }
@@ -267,6 +302,8 @@ void Tema1::Update(float deltaTimeSeconds)
             modelMatrix *= transform2D::Translate(Stars[i]->coord.first, Stars[i]->coord.second);
             RenderMesh2D(meshes["star1"], shaders["VertexColor"], modelMatrix);
         }
+
+
        
 }
 
@@ -330,7 +367,7 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
             if (mouseX > outlineLength * i && mouseX < outlineLength * (i + 1))
                 if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
                 {
-                    d = new Diam(j, true, false, { mouseX,sceneY });
+                    d = new Diam(j, true, width_d, false, 1, 0, { mouseX,sceneY });
                     Diamonds.push_back(d);
                 }
         }
@@ -344,7 +381,6 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
                         {
                            // Diamonds[i]->id = -2; // i make sure it is not rendered in the update function
                             Diamonds[i]->scale = true;
-                            scaleStep = 1;
 
                         }
     }
