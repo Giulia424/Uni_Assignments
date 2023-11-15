@@ -305,7 +305,7 @@ void Tema1::Update(float deltaTimeSeconds)
 							Diamonds[j]->waitTime -= deltaTimeSeconds;
 
 			if (Diamonds[j]->waitTime < 0) {
-				Diamonds[j]->waitTime = 2; // we wait 2 sec before starting new bullet
+				Diamonds[j]->waitTime = 2.5; // we wait 2 sec before starting new bullet
 				b = new Bullet(Diamonds[j]->id, true, r, { Diamonds[j]->coord.first,  Diamonds[j]->coord.second }); // we create bullets anytime we create a diamond
 				Bullets.push_back(b);
 			}
