@@ -133,10 +133,9 @@ void Tema1::Update(float deltaTimeSeconds)
 	modelMatrix = glm::mat3(1);
 	modelMatrix *= transform2D::Translate(500, 500);
 	if (!nrLives)
-		Exit();
+		Exit(); // game over
 
 	modelMatrix = glm::mat3(1); // Resetam matricea model 
-
 	for (int i = 1; i < 8; i += 2) { // creez tabla, alternand culoriile patratelor
 		modelMatrix *= transform2D::Translate(resolution.x - i * squareSide - 10, 10);
 		RenderMesh2D(meshes["dark_square"], shaders["VertexColor"], modelMatrix);
@@ -173,7 +172,7 @@ void Tema1::Update(float deltaTimeSeconds)
 	modelMatrix *= transform2D::Translate(outlineLength, resolution.y - outlineLength - 30);
 	RenderMesh2D(meshes["squareoutline"], shaders["VertexColor"], modelMatrix);
 
-	for (int i = 2; i < 5; i++) { // crearea contururilor pentru romburi
+	for (int i = 2; i < 5; i++) { // create the square outlines for the diamonds
 		modelMatrix *= transform2D::Translate(outlineLength * 1.5, 0);
 		RenderMesh2D(meshes["squareoutline"], shaders["VertexColor"], modelMatrix);
 	}
@@ -187,7 +186,157 @@ void Tema1::Update(float deltaTimeSeconds)
 	modelMatrix *= transform2D::Translate(-1.5 * outlineLength, 0);
 	RenderMesh2D(meshes["diamond4"], shaders["VertexColor"], modelMatrix);
 
-	modelMatrix = glm::mat3(1); // Resetam matricea model 
+
+	// DIAMONDS 
+	if (!Diamonds.empty())
+		for (float i = 0; i < Diamonds.size(); i++)
+		{
+			modelMatrix = glm::mat3(1); // we minimize the star if the player right clicked
+			modelMatrix *= transform2D::Translate(Diamonds[i]->coord.first, Diamonds[i]->coord.second);
+			if (Diamonds[i]->scale) {
+				if (Diamonds[i]->scaleStep > 0) {
+					Diamonds[i]->scaleStep -= deltaTimeSeconds;
+					modelMatrix *= transform2D::Scale(Diamonds[i]->scaleStep, Diamonds[i]->scaleStep);
+				}
+				if (Diamonds[i]->scaleStep < 0) {
+					Diamonds[i]->id = -2; // we make sure it disappears in the end
+				}
+			}
+			if (Diamonds[i]->id == 4)
+				RenderMesh2D(meshes["diamond4"], shaders["VertexColor"], modelMatrix);
+			else if (Diamonds[i]->id == 3)
+				RenderMesh2D(meshes["diamond3"], shaders["VertexColor"], modelMatrix);
+			else if (Diamonds[i]->id == 2)
+				RenderMesh2D(meshes["diamond2"], shaders["VertexColor"], modelMatrix);
+			else if (Diamonds[i]->id == 1)
+				RenderMesh2D(meshes["diamond1"], shaders["VertexColor"], modelMatrix);
+		}
+
+	// we make sure the diamonds disappear if they've been hit by hexagons
+	for (float i = 0; i < Diamonds.size(); i++)
+		for (float j = 0; j < Hexagons.size(); j++)
+		{
+			float distanceR = glm::distance(glm::vec2((Diamonds[i]->coord.first), Diamonds[i]->coord.second), glm::vec2((Hexagons[j]->coord.first), Hexagons[j]->coord.second));
+			if (distanceR < Diamonds[i]->radius + Hexagons[j]->radius && Diamonds[i]->render)
+				Diamonds[i]->scale = true;
+		}
+
+	//HEXAGONS
+	angularStep += deltaTimeSeconds;
+	for (float i = 0; i < Hexagons.size(); i++)
+		if (Hexagons[i]->render)
+		{
+			Hexagons[i]->coord.first -= 100 * deltaTimeSeconds;
+			modelMatrix = glm::mat3(1);
+			modelMatrix *= transform2D::Translate(Hexagons[i]->coord.first, Hexagons[i]->coord.second);
+			modelMatrix *= transform2D::Rotate(angularStep);
+			int a = Hexagons[i]->id;
+			RenderMesh2D(meshes["hexagon" + std::to_string(a)], shaders["VertexColor"], modelMatrix);
+
+			if (Hexagons[i]->coord.first < 0 && Hexagons[i]->render) {
+				Hexagons[i]->render = false; //when a hexagons passes by life lost
+				nrLives--;
+			}
+			if (Hexagons[i]->hit == 3)
+				Hexagons[i]->render = false; // when a hexagon is hit tree times, it disappears
+		}
+	random1 = rand() % 200;
+	if (random1 == 10) {
+		random2 = (rand() % 3);
+		randomid = (rand() % 4) + 1;
+		h = new Hexa(randomid, true, r, false, 1, 0, { resolution.x - 10,  15 * random2 + squareSide / 2 + squareSide * random2 });
+		Hexagons.push_back(h);
+	}
+
+
+	// STARS
+	random3 = rand() % 150; // rendering the stars that pop un on screen
+	if (random3 == 10) {
+		x = rand() % resolution.x;
+		y = rand() % resolution.y;
+		s = new Star(0, true, r, { x,y });
+		Stars.push_back(s);
+	}
+	for (float i = 0; i < Stars.size(); i++)
+		if (Stars[i]->render)
+		{
+			modelMatrix = glm::mat3(1);
+			modelMatrix *= transform2D::Translate(Stars[i]->coord.first, Stars[i]->coord.second);
+			RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
+		}
+	for (float i = 1, j = 1; i < 6 && j < 5; i += 1.5f, j++)  // rendering the prices for the diamonds
+	{
+		modelMatrix = glm::mat3(1);
+		modelMatrix *= transform2D::Translate(i * outlineLength + 15, resolution.y - outlineLength - 50);
+		modelMatrix *= transform2D::Scale(0.35, 0.35);
+		RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
+		for (int k = 1; k < j; k++) {
+			modelMatrix *= transform2D::Translate(r * 2, 0);
+			RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
+		}
+	}
+	for (float i = 0; i < nrStars; i++) // we add the points/stars we get
+	{
+		modelMatrix = glm::mat3(1);
+		if (i >= 64) // we align them line by line
+			return;
+		if (i > 48)
+			modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + r / 2 * (i - 48), resolution.y - outlineLength - 50 - r / 2 * 3);
+		else if (i >= 32)
+			modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + r / 2 * (i - 32), resolution.y - outlineLength - 50 - r / 2 * 2);
+		else if (i > 16)
+			modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + r / 2 * (i - 16), resolution.y - outlineLength - 50 - r / 2);
+		else
+			modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + r / 2 * i, resolution.y - outlineLength - 50);
+
+		modelMatrix *= transform2D::Scale(0.25, 0.25);
+		RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
+	}
+
+	//  BULLETS
+	for (int i = 0; i < Hexagons.size(); i++)
+		for (int j = 0; j < Diamonds.size(); j++) // trying to start the right bullets
+		{
+			if (abs(Diamonds[j]->coord.second - Hexagons[i]->coord.second) < 20)
+				if (Diamonds[j]->id == Hexagons[i]->id)
+					if (Diamonds[j]->render)
+						Diamonds[j]->waitTime -= deltaTimeSeconds; 
+
+			if (Diamonds[j]->waitTime < 0) {
+				Diamonds[j]->waitTime = 2; // we wait 2 sec before starting new bullet
+				b = new Bullet(Diamonds[j]->id, true, r, { Diamonds[j]->coord.first,  Diamonds[j]->coord.second }); // we create bullets anytime we create a diamond
+				Bullets.push_back(b);
+			}
+		}
+
+	for (int i = 0; i < Hexagons.size(); i++)
+		for (int j = 0; j < Bullets.size(); j++) {
+			float distanceR = glm::distance(glm::vec2((Bullets[j]->coord.first), Bullets[j]->coord.second), glm::vec2((Hexagons[i]->coord.first), Hexagons[i]->coord.second));
+			if (distanceR < Bullets[j]->radius + Hexagons[i]->radius && Bullets[j]->render)
+			{
+				Bullets[j]->render = false;
+				Hexagons[i]->hit++;
+			}
+		}
+
+	for (float i = 0; i < Bullets.size(); i++)
+		if (Bullets[i]->render)
+		{
+			Bullets[i]->coord.first += 100 * deltaTimeSeconds;
+			modelMatrix = glm::mat3(1);
+			modelMatrix *= transform2D::Translate(Bullets[i]->coord.first, Bullets[i]->coord.second);
+			modelMatrix *= transform2D::Rotate(angularStep);
+			if (Bullets[i]->id == 4)
+				RenderMesh2D(meshes["bullet4"], shaders["VertexColor"], modelMatrix);
+			else if (Bullets[i]->id == 3)
+				RenderMesh2D(meshes["bullet3"], shaders["VertexColor"], modelMatrix);
+			else if (Bullets[i]->id == 2)
+				RenderMesh2D(meshes["bullet2"], shaders["VertexColor"], modelMatrix);
+			else if (Bullets[i]->id == 1)
+				RenderMesh2D(meshes["bullet1"], shaders["VertexColor"], modelMatrix);
+		}
+	// LIVES
+	modelMatrix = glm::mat3(1); // reset the matrix
 	modelMatrix *= transform2D::Translate(resolution.x - 3.5 * outlineLength, resolution.y - outlineLength - 30);
 	if (nrLives > 2)
 		RenderMesh2D(meshes["life"], shaders["VertexColor"], modelMatrix);
@@ -208,169 +357,17 @@ void Tema1::Update(float deltaTimeSeconds)
 	else
 		RenderMesh2D(meshes["death"], shaders["VertexColor"], modelMatrix);
 
-	// we make sure the diamonds disappear if they've been hit by hexagons
-	for (float i = 0; i < Diamonds.size(); i++)
-		for (float j = 0; j < Hexagons.size(); j++)
-		{
-			float distanceR = glm::distance(glm::vec2((Diamonds[i]->coord.first), Diamonds[i]->coord.second), glm::vec2((Hexagons[j]->coord.first), Hexagons[j]->coord.second));
-			if (distanceR < Diamonds[i]->radius + Hexagons[j]->radius && Diamonds[i]->render) // initially render is true, and when the object is dropped correctly it becomes false
-			{
-				Diamonds[i]->scale = true;
-			}
-		}
-
-	if (!Diamonds.empty())
-		for (float i = 0; i < Diamonds.size(); i++)
-		{
-			modelMatrix = glm::mat3(1); // Resetam matricea model 
-			modelMatrix *= transform2D::Translate(Diamonds[i]->coord.first, Diamonds[i]->coord.second);
-			if (Diamonds[i]->scale) { // we minimize the star if the player right clicked
-				if (Diamonds[i]->scaleStep > 0) {
-					Diamonds[i]->scaleStep -= deltaTimeSeconds;
-					modelMatrix *= transform2D::Scale(Diamonds[i]->scaleStep, Diamonds[i]->scaleStep);
-				}
-				if (Diamonds[i]->scaleStep < 0) {
-					Diamonds[i]->id = -2; // we make sure it disappears in the end
-				}
-			}
-			if (Diamonds[i]->id == 4)
-				RenderMesh2D(meshes["diamond4"], shaders["VertexColor"], modelMatrix);
-			else if (Diamonds[i]->id == 3)
-				RenderMesh2D(meshes["diamond3"], shaders["VertexColor"], modelMatrix);
-			else if (Diamonds[i]->id == 2)
-				RenderMesh2D(meshes["diamond2"], shaders["VertexColor"], modelMatrix);
-			else if (Diamonds[i]->id == 1)
-				RenderMesh2D(meshes["diamond1"], shaders["VertexColor"], modelMatrix);
-		}
-	random1 = rand() % 100;
-	if (random1 == 10) {
-		random2 = (rand() % 3);
-		randomid = (rand() % 4) + 1;
-		h = new Hexa(randomid, true, r, false, 1, 0, { resolution.x - 10,  15 * random2 + squareSide / 2 + squareSide * random2 });
-		Hexagons.push_back(h);
-
-	}
-	angularStep += deltaTimeSeconds;
-	for (float i = 0; i < Hexagons.size(); i++)
-	{
-		Hexagons[i]->coord.first -= 100 * deltaTimeSeconds;
-		modelMatrix = glm::mat3(1); // Resetam matricea model 
-		modelMatrix *= transform2D::Translate(Hexagons[i]->coord.first, Hexagons[i]->coord.second);
-		modelMatrix *= transform2D::Rotate(angularStep);
-		int a = Hexagons[i]->id;
-		RenderMesh2D(meshes["hexagon" + std::to_string(a)], shaders["VertexColor"], modelMatrix);
-
-
-
-		if (Hexagons[i]->coord.first < 0 && Hexagons[i]->render) {
-			Hexagons[i]->render = false; //when 3 hexagons pass by
-			nrLives--;
-		}
-
-
-	}
-	random3 = rand() % 700; // we are adding the stars that pop un on screen
-	if (random3 == 10) {
-		x = rand() % resolution.x;
-		y = rand() % resolution.y;
-		s = new Star(0, true, r, { x,y });
-		Stars.push_back(s);
-	}
-	for (float i = 0; i < Stars.size(); i++)
-		if (Stars[i]->render)
-		{
-			modelMatrix = glm::mat3(1); // Resetam matricea model 
-			modelMatrix *= transform2D::Translate(Stars[i]->coord.first, Stars[i]->coord.second);
-			RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
-		}
-	for (float i = 1, j = 1; i < 6 && j < 5; i += 1.5f, j++)  // we are rendering the prices for the diamonds
-	{
-		modelMatrix = glm::mat3(1);
-		modelMatrix *= transform2D::Translate(i * outlineLength + 15, resolution.y - outlineLength - 50);
-		modelMatrix *= transform2D::Scale(0.35, 0.35);
-		RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
-		for (int k = 1; k < j; k++) {
-			modelMatrix *= transform2D::Translate(r * 2, 0);
-			RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
-
-		}
-
-	}
-
-
-	for (float i = 0; i < nrStars; i++) // we add the points/stars we get
-
-	{
-		modelMatrix = glm::mat3(1); // Resetam matricea 
-		if (i >= 64)
-			return;
-		if (i > 48)
-			modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + r / 2 * (i - 48), resolution.y - outlineLength - 50 - r / 2 * 3);
-		else if (i >= 32)
-			modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + r / 2 * (i - 32), resolution.y - outlineLength - 50 - r / 2 * 2);
-		else if (i > 16)
-			modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + r / 2 * (i - 16), resolution.y - outlineLength - 50 - r / 2);
-		else
-			modelMatrix *= transform2D::Translate(resolution.x - outlineLength * 3.5 + r / 2 * i, resolution.y - outlineLength - 50);
-
-		modelMatrix *= transform2D::Scale(0.25, 0.25);
-		RenderMesh2D(meshes["star"], shaders["VertexColor"], modelMatrix);
-	}
-
-	for (int i = 0; i < Hexagons.size(); i++)
-		for (int j = 0; j < Diamonds.size(); j++) // trying to start the right bullets
-		{
-			if (abs(Diamonds[j]->coord.second - Hexagons[i]->coord.second) < 20)
-				if (Diamonds[j]->id == Hexagons[i]->id)
-					if (Diamonds[j]->render)
-						Diamonds[j]->waitTime -= deltaTimeSeconds;
-
-			if (Diamonds[j]->waitTime < 0) {
-				Diamonds[j]->waitTime = 3;
-				b = new Bullet(Diamonds[j]->id, true, r, { Diamonds[j]->coord.first,  Diamonds[j]->coord.second });
-				Bullets.push_back(b);
-			}
-		}
-
-
-	for (float i = 0; i < Bullets.size(); i++)
-		if (Bullets[i]->render)
-		{
-			Bullets[i]->coord.first += 100 * deltaTimeSeconds;
-			modelMatrix = glm::mat3(1); // Resetam matricea model 
-			modelMatrix *= transform2D::Translate(Bullets[i]->coord.first, Bullets[i]->coord.second);
-			modelMatrix *= transform2D::Rotate(angularStep);
-			if (Bullets[i]->id == 4)
-				RenderMesh2D(meshes["bullet4"], shaders["VertexColor"], modelMatrix);
-			else if (Bullets[i]->id == 3)
-				RenderMesh2D(meshes["bullet3"], shaders["VertexColor"], modelMatrix);
-			else if (Bullets[i]->id == 2)
-				RenderMesh2D(meshes["bullet2"], shaders["VertexColor"], modelMatrix);
-			else if (Bullets[i]->id == 1)
-				RenderMesh2D(meshes["bullet1"], shaders["VertexColor"], modelMatrix);
-		}
 
 }
-
 
 void Tema1::FrameEnd()
 {
 	//DrawCoordinateSystem();
-
 }
-
-
-/*
- *  These are callback functions. To find more about callbacks and
- *  how they behave, see `input_controller.h`.
- */
-
 
 void Tema1::OnInputUpdate(float deltaTime, int mods)
 {
 	// Add smth
-
-
 }
 
 void Tema1::OnKeyPress(int key, int mods)
@@ -399,12 +396,12 @@ void Tema1::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
 	sceneY = 720 - mouseY;
-	if (button == 1) {
+	if (button == 1) { // if left click on diamond then drag
 		for (float i = 1, j = 4; i < 6 && j > 0; i += 1.5, j--) // anytime i drag a new diamond
 			if (mouseX > outlineLength * i && mouseX < outlineLength * (i + 1))
 				if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
 				{
-					d = new Diam(j, false, width_d, false, 1, 0, 0,{ mouseX,sceneY });
+					d = new Diam(j, false, width_d, false, 1, 0, 0, { mouseX,sceneY });
 					Diamonds.push_back(d);
 				}
 		for (int i = 0; i < Stars.size(); i++) // when we press a star we increment our points
@@ -416,9 +413,9 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 						Stars[i]->render = false;
 					}
 	}
-	if (button == 2)
+	if (button == 2) // if right clicked on diamond then disappear
 		for (int i = 0; i < Diamonds.size(); i++)
-			if (Diamonds[i]->render)  // initially render is true, and when the object is dropped correctly it becomes false
+			if (Diamonds[i]->render)
 				if (mouseX > Diamonds[i]->coord.first - squareSide / 2 && mouseX < Diamonds[i]->coord.first + squareSide / 2)
 					if (sceneY > Diamonds[i]->coord.second - squareSide / 2 && sceneY < Diamonds[i]->coord.second + squareSide / 2)
 						Diamonds[i]->scale = true;
@@ -435,7 +432,7 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 					{
 						Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
 						Diamonds[i]->coord.second = 10 + squareSide / 2;
-						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford a diamond
+						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford the diamond
 						{
 							Diamonds[i]->render = true;
 
@@ -460,7 +457,7 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 					{
 						Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
 						Diamonds[i]->coord.second = 20 + squareSide + squareSide / 2;
-						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford a diamond
+						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford the diamond
 						{
 							Diamonds[i]->render = true;
 						}
@@ -483,7 +480,7 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 					{
 						Diamonds[i]->coord.first = squareSide / 2 + squareSide * j + width_r + 15 * (j + 1);
 						Diamonds[i]->coord.second = 30 + squareSide * 2 + squareSide / 2;
-						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford a diamond
+						if (nrStars >= 5 - Diamonds[i]->id) // we check if we can afford the diamond
 						{
 							Diamonds[i]->render = true;
 						}
@@ -503,8 +500,8 @@ void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 								nrStars--;
 					}
 				}
-			if (!Diamonds[i]->render) // if i drop the diamand in a random wrong place
-				Diamonds[i]->id = -1; // i make sure it is not rendered in the update function
+			if (!Diamonds[i]->render) // if the diamand is dropped in a random wrong place
+				Diamonds[i]->id = -1; // it shouldn't be rendered in the update function
 		}
 }
 
