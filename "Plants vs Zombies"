@@ -217,6 +217,7 @@ void Tema1::Update(float deltaTimeSeconds)
 		for (float j = 0; j < Hexagons.size(); j++)
 		{
 			float distanceR = glm::distance(glm::vec2((Diamonds[i]->coord.first), Diamonds[i]->coord.second), glm::vec2((Hexagons[j]->coord.first), Hexagons[j]->coord.second));
+			// collision diamond hexagon
 			if (distanceR < Diamonds[i]->radius + Hexagons[j]->radius && Diamonds[i]->render)
 				Diamonds[i]->scale = true;
 		}
@@ -240,7 +241,7 @@ void Tema1::Update(float deltaTimeSeconds)
 			if (Hexagons[i]->hit == 3)
 				Hexagons[i]->render = false; // when a hexagon is hit tree times, it disappears
 		}
-	random1 = rand() % 200;
+	random1 = rand() % 400;
 	if (random1 == 10) {
 		random2 = (rand() % 3);
 		randomid = (rand() % 4) + 1;
@@ -250,7 +251,7 @@ void Tema1::Update(float deltaTimeSeconds)
 
 
 	// STARS
-	random3 = rand() % 150; // rendering the stars that pop un on screen
+	random3 = rand() % 450; // rendering the stars that pop un on screen
 	if (random3 == 10) {
 		x = rand() % resolution.x;
 		y = rand() % resolution.y;
@@ -297,10 +298,11 @@ void Tema1::Update(float deltaTimeSeconds)
 	for (int i = 0; i < Hexagons.size(); i++)
 		for (int j = 0; j < Diamonds.size(); j++) // trying to start the right bullets
 		{
-			if (abs(Diamonds[j]->coord.second - Hexagons[i]->coord.second) < 20)
-				if (Diamonds[j]->id == Hexagons[i]->id)
-					if (Diamonds[j]->render)
-						Diamonds[j]->waitTime -= deltaTimeSeconds; 
+			if (Hexagons[i]->render)
+				if (abs(Diamonds[j]->coord.second - Hexagons[i]->coord.second) < 20)
+					if (Diamonds[j]->id == Hexagons[i]->id)
+						if (Diamonds[j]->render)
+							Diamonds[j]->waitTime -= deltaTimeSeconds;
 
 			if (Diamonds[j]->waitTime < 0) {
 				Diamonds[j]->waitTime = 2; // we wait 2 sec before starting new bullet
@@ -312,11 +314,14 @@ void Tema1::Update(float deltaTimeSeconds)
 	for (int i = 0; i < Hexagons.size(); i++)
 		for (int j = 0; j < Bullets.size(); j++) {
 			float distanceR = glm::distance(glm::vec2((Bullets[j]->coord.first), Bullets[j]->coord.second), glm::vec2((Hexagons[i]->coord.first), Hexagons[i]->coord.second));
-			if (distanceR < Bullets[j]->radius + Hexagons[i]->radius && Bullets[j]->render)
-			{
-				Bullets[j]->render = false;
-				Hexagons[i]->hit++;
-			}
+			//collision bullet hexagon
+			if (distanceR < Bullets[j]->radius + Hexagons[i]->radius / 2)
+				if (Bullets[j]->render && Hexagons[i]->render) // we make sure to hit only the correct hexagons
+					if (Bullets[j]->id == Hexagons[i]->id)
+					{
+						Bullets[j]->render = false;
+						Hexagons[i]->hit++;
+					}
 		}
 
 	for (float i = 0; i < Bullets.size(); i++)
