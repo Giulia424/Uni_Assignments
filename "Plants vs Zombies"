@@ -242,7 +242,7 @@ void Tema1::Update(float deltaTimeSeconds)
 			else if (Diamonds[i]->id == 1)
 				RenderMesh2D(meshes["diamond1"], shaders["VertexColor"], modelMatrix);
 		}
-	random1 = rand() % 550;
+	random1 = rand() % 100;
 	if (random1 == 10) {
 		random2 = (rand() % 3);
 		randomid = (rand() % 4) + 1;
@@ -319,13 +319,19 @@ void Tema1::Update(float deltaTimeSeconds)
 
 	for (int i = 0; i < Hexagons.size(); i++)
 		for (int j = 0; j < Diamonds.size(); j++) // trying to start the right bullets
+		{
 			if (abs(Diamonds[j]->coord.second - Hexagons[i]->coord.second) < 20)
 				if (Diamonds[j]->id == Hexagons[i]->id)
 					if (Diamonds[j]->render)
-					{
-						b = new Bullet(Diamonds[j]->id, true, r, { Diamonds[j]->coord.first,  Diamonds[j]->coord.second });
-						Bullets.push_back(b);
-					}
+						Diamonds[j]->waitTime -= deltaTimeSeconds;
+
+			if (Diamonds[j]->waitTime < 0) {
+				Diamonds[j]->waitTime = 3;
+				b = new Bullet(Diamonds[j]->id, true, r, { Diamonds[j]->coord.first,  Diamonds[j]->coord.second });
+				Bullets.push_back(b);
+			}
+		}
+
 
 	for (float i = 0; i < Bullets.size(); i++)
 		if (Bullets[i]->render)
@@ -398,7 +404,7 @@ void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 			if (mouseX > outlineLength * i && mouseX < outlineLength * (i + 1))
 				if (sceneY > resolution.y - outlineLength - 30 && sceneY < resolution.y - 30)
 				{
-					d = new Diam(j, false, width_d, false, 1, 0, { mouseX,sceneY });
+					d = new Diam(j, false, width_d, false, 1, 0, 0,{ mouseX,sceneY });
 					Diamonds.push_back(d);
 				}
 		for (int i = 0; i < Stars.size(); i++) // when we press a star we increment our points
