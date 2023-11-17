@@ -242,7 +242,7 @@ void Tema1::Update(float deltaTimeSeconds)
 			if (Hexagons[i]->hit == 3)
 				Hexagons[i]->render = false; // when a hexagon is hit tree times, it disappears
 		}
-	random1 = rand() % 200;
+	random1 = rand() % 550;
 	if (random1 == 10) {
 		random2 = (rand() % 3);
 		randomid = (rand() % 4) + 1;
@@ -252,7 +252,7 @@ void Tema1::Update(float deltaTimeSeconds)
 
 
 	// STARS
-	random3 = rand() % 300; // rendering the stars that pop un on screen
+	random3 = rand() % 500; // rendering the stars that pop un on screen
 	if (random3 == 10) {
 		x = rand() % resolution.x;
 		y = rand() % resolution.y;
@@ -306,7 +306,7 @@ void Tema1::Update(float deltaTimeSeconds)
 							Diamonds[j]->waitTime -= deltaTimeSeconds;
 
 			if (Diamonds[j]->waitTime < 0) {
-				Diamonds[j]->waitTime = 2.5; // we wait 2 sec before starting new bullet
+				Diamonds[j]->waitTime = 2; // we wait 2 sec before starting new bullet
 				b = new Bullet(Diamonds[j]->id, true, r, { Diamonds[j]->coord.first,  Diamonds[j]->coord.second }); // we create bullets anytime we create a diamond
 				Bullets.push_back(b);
 			}
@@ -328,7 +328,7 @@ void Tema1::Update(float deltaTimeSeconds)
 	for (float i = 0; i < Bullets.size(); i++)
 		if (Bullets[i]->render)
 		{
-			Bullets[i]->coord.first += 100 * deltaTimeSeconds;
+			Bullets[i]->coord.first += 200 * deltaTimeSeconds;
 			modelMatrix = glm::mat3(1);
 			modelMatrix *= transform2D::Translate(Bullets[i]->coord.first, Bullets[i]->coord.second);
 			modelMatrix *= transform2D::Rotate(angularStep);
