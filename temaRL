@@ -34,7 +34,7 @@ def send_bdpu_every_sec():
         # TODO Send BDPU every second if necessary
         time.sleep(1)
 
-def parse_VLAN (file_path,int_name,int_nr, vlan):
+def parse_VLAN (file_path,VLAN_TABLE):
     with open(file_path, "r") as file:
         priority = int(file.readline().strip())
         # Split the line into fields by whitespaces
@@ -43,7 +43,13 @@ def parse_VLAN (file_path,int_name,int_nr, vlan):
             interface_format = fields[0]
             int_name, int_nr = interface_format.split("-",1)
             vlan = fields[1]
-    return int_name, int_nr, vlan
+            if vlan == 'T' :
+                port1, port2 = int_nr.split("-")
+                VLAN_TABLE = {'T': {"name": int_name, "port1": port1, "port2": port2}}
+            else :
+                VLAN_TABLE = {vlan: {"name": int_name, "port": int_nr} }
+
+    return VLAN_TABLE
 
 def main():
     # init returns the max interface number. Our interfaces
@@ -66,6 +72,7 @@ def main():
 
     # Tabele CAM - SWITCH -> MAC - PORT 
     CAM_TABLE = {} # the key is the mac addr and the value is the interface
+    VLAN_TABLE = {}
 
     while True:
         # Note that data is of type bytes([...]).
@@ -91,6 +98,7 @@ def main():
         CAM_TABLE[src_mac] = interface
         if dest_mac in CAM_TABLE:
             send_to_link(CAM_TABLE[dest_mac], data, length)
+           
         else:
             for o in interfaces:
                 if  o != interface :
@@ -102,32 +110,9 @@ def main():
         interface_nr = -1
         interface_name = ''
         vlan = -1
-        interface_name, interface_nr, vlan = parse_VLAN(file_path,interface_name, interface_nr, vlan)
-        if switch_id == 0 :
-            if interface == 0 or interface == 1:
-                tag = create_vlan_tag(vlan)
-                data.insert(13, tag)
-                length += 4
-            else :
-                del data[13:17]
-                length -= 4
-        elif switch_id == 1 :
-                if interface == 0 or interface == 1 :
-                    tag = create_vlan_tag(vlan)
-                    data.insert(13, tag)
-                    length += 4
-                else :
-                    del data[13:17]
-                    length -= 4
-        else :
-            if switch_id == 2 :
-                if interface == 0 or interface == 1 :
-                    tag = create_vlan_tag(vlan)
-                    data.insert(13, tag)
-                    length += 4
-                else :
-                    del data[13:17]
-                    length -= 4
+        VLAN_TABLE = parse_VLAN(file_path,VLAN_TABLE)
+        for i in VLAN_TABLE :
+             print(VLAN_TABLE[i])
 
         # TODO: Implement STP support
 
