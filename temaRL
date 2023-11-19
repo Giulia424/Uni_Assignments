@@ -40,14 +40,15 @@ def parse_VLAN (file_path,VLAN_TABLE):
         # Split the line into fields by whitespaces
         for line in file:
             fields = line.split()
-            interface_format = fields[0]
-            int_name, int_nr = interface_format.split("-",1)
+            int_name = fields[0]
+            int_r, int_nr = int_name.split("-",1)
             vlan = fields[1]
-            if vlan == 'T' :
-                port1, port2 = int_nr.split("-")
-                VLAN_TABLE = {'T': {"name": int_name, "port1": port1, "port2": port2}}
+            if vlan in VLAN_TABLE:
+                if not any(d['name'] == int_name for d in VLAN_TABLE):
+                    VLAN_TABLE[vlan].append({"name": int_name})
             else :
-                VLAN_TABLE = {vlan: {"name": int_name, "port": int_nr} }
+                VLAN_TABLE[vlan] = [{"name": int_name}]
+       
 
     return VLAN_TABLE
 
@@ -107,13 +108,11 @@ def main():
         # TODO: Implement VLAN support
         file_path = "/home/giulia/CTI/III/RL/Teme/tema1-public/configs/switch" 
         file_path += switch_id  +".cfg"
-        interface_nr = -1
-        interface_name = ''
-        vlan = -1
         VLAN_TABLE = parse_VLAN(file_path,VLAN_TABLE)
+       # print(f" we receive it from {get_interface_name(interface)}")
         for i in VLAN_TABLE :
-             print(VLAN_TABLE[i])
-
+            print(i)
+            print(VLAN_TABLE[i])
         # TODO: Implement STP support
 
         # data is of type bytes.
