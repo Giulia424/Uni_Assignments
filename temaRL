@@ -43,8 +43,9 @@ def parse_VLAN (file_path,VLAN_TABLE):
             int_name = fields[0]
             int_r, int_nr = int_name.split("-",1)
             vlan = fields[1]
+            # ne asiguram sa nu cream duplicate in dictionar
             if vlan in VLAN_TABLE:
-                if not any(d['name'] == int_name for d in VLAN_TABLE[vlan]):
+                if not any(i['name'] == int_name for i in VLAN_TABLE[vlan]): 
                     VLAN_TABLE[vlan].append({"name": int_name})
             else :
                 VLAN_TABLE[vlan] = [{"name": int_name}]
@@ -74,6 +75,7 @@ def main():
     # Tabele CAM - SWITCH -> MAC - PORT 
     CAM_TABLE = {} # the key is the mac addr and the value is the interface
     VLAN_TABLE = {}
+    next_interface = -1
 
     while True:
         # Note that data is of type bytes([...]).
@@ -99,6 +101,7 @@ def main():
         CAM_TABLE[src_mac] = interface
         if dest_mac in CAM_TABLE:
             send_to_link(CAM_TABLE[dest_mac], data, length)
+            next_interface = CAM_TABLE[dest_mac]
            
         else:
             for o in interfaces:
@@ -109,10 +112,18 @@ def main():
         file_path = "/home/giulia/CTI/III/RL/Teme/tema1-public/configs/switch" 
         file_path += switch_id  +".cfg"
         VLAN_TABLE = parse_VLAN(file_path,VLAN_TABLE)
-       # print(f" we receive it from {get_interface_name(interface)}")
-        for i in VLAN_TABLE :
-            print(i)
-            print(VLAN_TABLE[i])
+        for vlan in VLAN_TABLE :
+            for port in VLAN_TABLE[vlan] :
+                if get_interface_name(interface) == port['name'] and  vlan == 'T' : # we receive it from trunk
+                    if get_interface_name(next_interface) == port['name'] and  vlan != 'T' : # we send it on access
+                        del data[13:17]
+                        length -= 4
+                else :# we receive it from access
+                    if get_interface_name(next_interface) == port['name'] and  vlan == 'T' : # we send it on trunk
+                        tag = create_vlan_tag(vlan_id)
+                        data.insert(13, tag)
+                        length += 4
+
         # TODO: Implement STP support
 
         # data is of type bytes.
