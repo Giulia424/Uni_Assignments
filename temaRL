@@ -78,6 +78,9 @@ def main():
     next_interface = -1
     interface_name = ''
     next_interface_name = ''
+    file_path = "/home/giulia/CTI/III/RL/Teme/tema1-public/configs/switch" 
+    file_path += switch_id  +".cfg"
+    VLAN_TABLE = parse_VLAN(file_path,VLAN_TABLE)
 
     while True:
         # Note that data is of type bytes([...]).
@@ -105,31 +108,35 @@ def main():
         if dest_mac in CAM_TABLE:
             send_to_link(CAM_TABLE[dest_mac], data, length)
             next_interface = CAM_TABLE[dest_mac]
-            next_interface_name = get_interface_name(next_interface)   
+            next_interface_name = get_interface_name(next_interface)
+           
         else:
             for o in interfaces:
                 if  o != interface :
                     send_to_link(o, data, length)
 
         # TODO: Implement VLAN support
-        file_path = "/home/giulia/CTI/III/RL/Teme/tema1-public/configs/switch" 
-        file_path += switch_id  +".cfg"
-        VLAN_TABLE = parse_VLAN(file_path,VLAN_TABLE)
+        
         for vlan in VLAN_TABLE :
             for port in VLAN_TABLE[vlan] :
                 #print(f"VLAN:{vlan} si PORT: {port}")
-                #print(f"REC_INT:{ interface_name}, NEXT_INT: {next_interface_name}")
+                #print(f"REC_INT:{ interface}, NEXT_INT: {next_interface_name}")
                 if interface_name == port['name'] and  vlan == 'T' : # we receive it from trunk
-                    if next_interface_name == port['name'] and  vlan != 'T' : # we send it on access
-                        if vlan == interface :         
-                            data = data[:12] + data[18:] 
-                            length -= 4
+                    for v in VLAN_TABLE :
+                        for p in VLAN_TABLE[v] : 
+                            if next_interface_name == p['name'] and  v != 'T' : # we send it on access
+                                if v == interface :         
+                                    data = data[:12] + data[18:] 
+                                    length -= 4
                 else :# we receive it from access
-                    if next_interface_name == port['name'] and  vlan == 'T' : # we send it on trunk
-                        if vlan == interface :  
-                            tag = create_vlan_tag(vlan_id)
-                            data = data[:12] + tag + data[13:]
-                            length += 4
+                    for v in VLAN_TABLE :
+                        for p in VLAN_TABLE[v] : 
+                            if next_interface_name == p['name'] and  v == 'T' : # we send it on trunk
+                                if v == interface :  
+                                    tag = create_vlan_tag(vlan_id)
+                                    data = data[:12] + tag + data[13:]
+                                    length += 4
+
 
         # TODO: Implement STP support
 
