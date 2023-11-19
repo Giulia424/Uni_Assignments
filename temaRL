@@ -44,7 +44,7 @@ def parse_VLAN (file_path,VLAN_TABLE):
             int_r, int_nr = int_name.split("-",1)
             vlan = fields[1]
             if vlan in VLAN_TABLE:
-                if not any(d['name'] == int_name for d in VLAN_TABLE):
+                if not any(d['name'] == int_name for d in VLAN_TABLE[vlan]):
                     VLAN_TABLE[vlan].append({"name": int_name})
             else :
                 VLAN_TABLE[vlan] = [{"name": int_name}]
