@@ -12,7 +12,7 @@ def parse_ethernet_header(data):
     #dest_mac, src_mac, ethertype = struct.unpack('!6s6sH', data[:14])
     dest_mac = data[0:6]
     src_mac = data[6:12]
-    
+
     # Extract ethertype. Under 802.1Q, this may be the bytes from the VLAN TAG
     ether_type = (data[12] << 8) + data[13]
     vlan_id = -1
@@ -64,17 +64,17 @@ def main():
     for i in interfaces:
         print(get_interface_name(i))
 
-    # Tabele CAM - SWITCH -> MAC - PORT 
+    # Tabele CAM - SWITCH -> MAC - PORT
     CAM_TABLE = {} # the key is the mac addr and the value is the interface
     VLAN_TABLE = {}
     next_interface = -1
     interface_name = ''
     next_interface_name = ''
-    file_path = "/home/giulia/CTI/III/RL/Teme/tema1-public/configs/switch" 
+    file_path = "configs/switch"
     file_path += switch_id  +".cfg"
     VLAN_TABLE = parse_VLAN(file_path,VLAN_TABLE)
 
-    
+
     while True:
         # Note that data is of type bytes([...]).
         # b1 = bytes([72, 101, 108, 108, 111])  # "Hello"
@@ -87,8 +87,10 @@ def main():
 
         # remove tag when we receive a frame
         if vlan_id != -1 :
-            data = data[0:12] + data[16:] 
+            data = data[0:12] + data[16:]
             length -=4
+        else :
+            vlan_id = int(VLAN_TABLE[get_interface_name(interface)])
 
         # Print the MAC src and MAC dst in human readable format
         dest_mac = ':'.join(f'{b:02x}' for b in dest_mac)
@@ -107,58 +109,31 @@ def main():
         if dest_mac in CAM_TABLE:
             next_interface = CAM_TABLE[dest_mac]
             next_interface_name = get_interface_name(next_interface)
-            if VLAN_TABLE[interface_name] == VLAN_TABLE[next_interface_name] :
-                if VLAN_TABLE[interface_name] != 'T' : # if we receive it from and send it to access  A -> A
-                    if vlan_id == int(VLAN_TABLE[next_interface_name]) :
-                        send_to_link(next_interface, data, length)
-                        sent = True
-                else : # if we receive it from and send it to trunk T -> T
-                    tag = create_vlan_tag(int(VLAN_TABLE[interface_name]))
+            if VLAN_TABLE[next_interface_name] == 'T' :
+                    tag = create_vlan_tag(vlan_id)
                     data = data[0:12] + tag + data[12:]
                     length += 4
                     send_to_link(next_interface, data, length)
                     sent = True
-            
-            else :
-                if VLAN_TABLE[next_interface_name] == 'T' : # if we receive it from access and send it to trunk A -> T
-                    tag = create_vlan_tag(int(VLAN_TABLE[interface_name]))
-                    data = data[0:12] + tag + data[12:]
-                    length += 4
-                    send_to_link(next_interface, data, length)
-                    sent = True
-                else :
-                    if VLAN_TABLE[interface_name] == 'T' : # if we receive it from trunk and send it to access T -> A
-                        if vlan_id == int(VLAN_TABLE[next_interface_name]) :   
-                            send_to_link(next_interface, data, length)
-                            sent = True
-                
+            elif vlan_id == int(VLAN_TABLE[next_interface_name]) :
+                send_to_link(next_interface, data, length)
+                sent = True
+
+
         if sent is False :
             for o in interfaces:
                 if  o != interface :
                     next_interface = o
                     next_interface_name = get_interface_name(next_interface)
-                    if VLAN_TABLE[interface_name] ==  VLAN_TABLE[next_interface_name] :
-                        if VLAN_TABLE[interface_name] != 'T' : # if we receive it from and send it to access 
-                            if vlan_id == int(VLAN_TABLE[next_interface_name]) :
-                                send_to_link(next_interface, data, length)
-                        else : # if we receive from and send to trunk
-                            tag = create_vlan_tag(int(VLAN_TABLE[interface_name]))
+                    if VLAN_TABLE[next_interface_name] == 'T' :
+                            tag = create_vlan_tag(vlan_id)
                             data = data[0:12] + tag + data[12:]
                             length += 4
                             send_to_link(next_interface, data, length)
-                            sent = True
-                        
-                    else :
-                        if VLAN_TABLE[next_interface_name] == 'T' : # if we receive it from access and send it to trunk
-                            tag = create_vlan_tag(int(VLAN_TABLE[interface_name]))
-                            data = data[0:12] + tag + data[12:]
-                            length += 4
-                            send_to_link(next_interface, data, length)
-                        else :
-                            if VLAN_TABLE[interface_name] == 'T' : # if we receive it from trunk and send it to access
-                                if vlan_id == int(VLAN_TABLE[next_interface_name]) :   
-                                    send_to_link(next_interface, data, length)
-                        
+                    elif vlan_id ==  int(VLAN_TABLE[next_interface_name]) :
+                        send_to_link(next_interface, data, length)
+
+
         # TODO: Implement VLAN support
 
         # TODO: Implement STP support
