@@ -129,9 +129,6 @@ def main():
                 else :
                     if VLAN_TABLE[interface_name] == 'T' : # if we receive it from trunk and send it to access T -> A
                         if vlan_id == int(VLAN_TABLE[next_interface_name]) :   
-                            tag = create_vlan_tag(int(VLAN_TABLE[interface_name]))
-                            data = data[0:12] + tag + data[12:]
-                            length += 4
                             send_to_link(next_interface, data, length)
                             sent = True
                 
@@ -160,9 +157,6 @@ def main():
                         else :
                             if VLAN_TABLE[interface_name] == 'T' : # if we receive it from trunk and send it to access
                                 if vlan_id == int(VLAN_TABLE[next_interface_name]) :   
-                                    tag = create_vlan_tag(int(VLAN_TABLE[interface_name]))
-                                    data = data[0:12] + tag + data[12:]
-                                    length += 4
                                     send_to_link(next_interface, data, length)
                         
         # TODO: Implement VLAN support
