@@ -73,7 +73,6 @@ def main():
     file_path = "/home/giulia/CTI/III/RL/Teme/tema1-public/configs/switch" 
     file_path += switch_id  +".cfg"
     VLAN_TABLE = parse_VLAN(file_path,VLAN_TABLE)
-    
 
     
     while True:
@@ -85,6 +84,7 @@ def main():
 
         dest_mac, src_mac, ethertype, vlan_id = parse_ethernet_header(data)
         sent = False
+
         # remove tag when we receive a frame
         if vlan_id != -1 :
             data = data[0:12] + data[16:] 
@@ -117,20 +117,29 @@ def main():
                     length += 4
                     send_to_link(next_interface, data, length)
                     sent = True
-
-        if sent is False : # if not sent before, we broadcast it
+                else:
+                    if VLAN_TABLE[interface_name] == 'T' :
+                        if vlan_id == VLAN_TABLE[next_interface_name] :
+                            send_to_link(next_interface, data, length)
+                            sent = True
+        else :
             for o in interfaces:
                 if  o != interface :
                     next_interface = o
                     next_interface_name = get_interface_name(next_interface)
-                    if VLAN_TABLE[interface_name] == VLAN_TABLE[next_interface_name] :
+                    if VLAN_TABLE[interface_name] ==  VLAN_TABLE[next_interface_name] :
                         send_to_link(next_interface, data, length)
+                        
                     else :
                         if VLAN_TABLE[next_interface_name] == 'T' :
                             tag = create_vlan_tag(int(VLAN_TABLE[interface_name]))
                             data = data[0:12] + tag + data[12:]
                             length += 4
                             send_to_link(next_interface, data, length)
+                        else:
+                            if VLAN_TABLE[interface_name] == 'T' :
+                                if vlan_id == VLAN_TABLE[next_interface_name] :
+                                    send_to_link(next_interface, data, length)  
 
         # TODO: Implement VLAN support
 
