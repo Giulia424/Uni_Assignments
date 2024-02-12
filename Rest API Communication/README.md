@@ -1,6 +1,0 @@
-The task was to implement a file executer loader for Linux, using a demand-page mechanism. I had to write a program to parse through the file and find every invalid access to a memory area. There were three cases to take under consideration:if the pagefault isn't in a segment we know, if the pagefault is in an unmapped page or if the page is in a mapped page.
-First of all, I found out where  the page fault was in the file (in which segment and page). If the page fault didn't belong to any segment, I had to generate a seg fault using the function gen_segv, because there was an unpermitted access to the memory. This function uses the signal function and the default handler. 
-Next, I checked whether or not the page was mapped. If it is unmapped, I mapped it using the mmap and the mprotect functions and then I copied the information needed from the file, but only if it doesn't exceed de file size. If I found the page endpoint to be after the file size endpoint, I only copied a part of the data from the executable. And lastly, if the page was already mapped, I once again made sure to generate a seg fault.
-
-
- 
