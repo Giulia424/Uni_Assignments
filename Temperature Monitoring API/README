@@ -1,0 +1,3 @@
+run command:docker compose up --build
+-- include drop.all si create_all
+
